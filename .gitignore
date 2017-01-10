@@ -1,3 +1,9 @@
+OGLPack/
+build/
+eigen/
+cmake/
+OGLPack/include/
+
 # Compiled Object files
 *.slo
 *.lo
