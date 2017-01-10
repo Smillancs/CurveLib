@@ -1,6 +1,7 @@
+cmake_minimum_required(VERSION 3.5)
+
 add_executable(Differential_Geometry WIN32
 main.cpp
-Curve.hpp
 CurveRenderer.h
 CurveRenderer.cpp
 CommandLine.hpp
@@ -12,34 +13,38 @@ gShaderProgram.h
 gShaderProgram.cpp
 gVertexBuffer.h
 gVertexBuffer.cpp
-GeomInvariant.hpp
-GeomInvariant.cpp
 MyApp.h
 MyApp.cpp
-SimpleCurves.hpp
 Utils.hpp
 )
 
-
-
+set(CMAKE_CXX_FLAGS "-std=c++11")
 set(tarver "x86")
-set(libdir "../OGLPack/lib/${tarver}")
-set(bindir "../OGLPack/bin/${tarver}")
 
 
-#include_directories(../glew-2.0.0/include)
-include_directories(../OGLPack/include/glm)
-include_directories(../OGLPack/include)
-find_library(GLEW_LIB REQUIRED libglew32 HINTS libdir)
-find_library(GLU_LIB REQUIRED GlU32 HINTS libdir)
-find_library(OGL_LIB REQUIRED OPENGL32 HINTS libdir)
-find_library(SDL2main_LIB NAME SDL2main HINTS libdir)
-find_library(SDL2_LIB NAME SDL2 HINTS libdir)
-find_library(SDL2_image_LIB NAME SDL2_image HINTS libdir)
+if(UNIX)
+	include_directories(/usr/include/SDL2)
+	find_library(GLEW_LIB REQUIRED GLEW)
+	find_library(GLU_LIB REQUIRED GLU)
+	find_library(OGL_LIB REQUIRED GL)
+endif()
+if(WIN32)
+	set(libdir "../OGLPack/lib/${tarver}")
+	include_directories(../eigen)
+	include_directories(../OGLPack/include)
+	find_library(GLEW_LIB NAME glew32s HINTS ${libdir})
+	find_library(GLU_LIB NAME GlU32 HINTS ${libdir})
+	find_library(OGL_LIB NAME OPENGL32 HINTS ${libdir})
+endif()
+
+find_library(SDL2main_LIB NAME SDL2main HINTS ${libdir})
+find_library(SDL2_LIB NAME SDL2 HINTS ${libdir})
+find_library(SDL2_image_LIB NAME SDL2_image HINTS ${libdir})
+
 target_link_libraries(Differential_Geometry PUBLIC ${GLEW_LIB})
 target_link_libraries(Differential_Geometry PUBLIC ${GLU_LIB})
 target_link_libraries(Differential_Geometry PUBLIC ${OGL_LIB})
 target_link_libraries(Differential_Geometry PUBLIC ${SDL2main_LIB})
 target_link_libraries(Differential_Geometry PUBLIC ${SDL2_LIB})
 target_link_libraries(Differential_Geometry PUBLIC ${SDL2_image_LIB})
-include_directories(../eigen)
+target_link_libraries(Differential_Geometry PUBLIC CurveLib)
