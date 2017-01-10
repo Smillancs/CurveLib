@@ -1,0 +1,67 @@
+#version 420
+
+layout (quads, equal_spacing) in;
+
+in block
+{
+	vec3	pos;
+} In[];
+
+out block
+{
+	vec3	pos;
+	vec3	n;
+	vec2	tex;
+} Out;
+
+uniform mat4 VP;
+
+void main()
+{
+	float u = gl_TessCoord.x, u1 = 1-u;
+	float v = gl_TessCoord.y, v1 = 1-v;
+
+	float Bu[3] = {1*u1*u1,2*u*u1,1*u*u};
+	float Bv[3] = {1*v1*v1,2*v*v1,1*v*v};
+
+	float dBu[2] = {u1, u};
+	float dBv[2] = {v1, v};
+
+	vec3 dub[2*3], dvb[3*2];
+
+	for (int i=0; i<2; ++i)
+		for (int j=0; j<3; ++j)
+			dub[i + j*2] = 2*(In[i+1 + j*3].pos - In[i + j*3].pos);
+
+	for (int i=0; i<3; ++i)
+		for (int j=0; j<2; ++j)
+			dvb[i + j*3] = 2*(In[i + (j+1)*3].pos - In[i + j*3].pos);
+
+	// b(u,v) kiertekelese
+	Out.pos = vec3( 0, 0, 0 );
+
+	for (int i=0; i<3; ++i)
+	{
+		for (int j=0; j<3; ++j)
+		{
+			Out.pos += In[i + j*3].pos*Bu[i]*Bv[j];
+		}
+	}
+
+	// u, v parcialis derivaltak kiertekelese
+	vec3 du = vec3(0), dv = vec3(0);
+
+	for (int i=0; i<2; ++i)
+		for (int j=0; j<3; ++j)
+			du += dub[i + j*2]*dBu[i]*Bv[j];
+
+	for (int i=0; i<3; ++i)
+		for (int j=0; j<2; ++j)
+			dv += dvb[i + j*3]*Bu[i]*dBv[j];
+
+	vec3 n = normalize( cross(du, dv) );
+
+	gl_Position = VP * vec4(Out.pos, 1);
+	Out.n		= n;
+	Out.tex		= gl_TessCoord.xy;
+}
