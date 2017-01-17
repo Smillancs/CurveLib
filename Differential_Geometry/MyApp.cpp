@@ -31,7 +31,7 @@ bool CMyApp::Init()
 	Curve& c = ExampleHandler::get(3);
 
 	CurveRenderer ren(c);
-	ren.genBuffer(N, 0, 2 * M_PI);
+	ren.genBuffer(N, 0, 1);
 	m_vb = ren.getBuffer();
 
 

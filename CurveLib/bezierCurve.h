@@ -10,7 +10,7 @@
 #include <GL/GLU.h>
 #include <math.h>
 #endif
-#include <Eigen\Core>
+#include <Eigen/Core>
 #include "all_incl.h"
 #include "Curve.hpp"
 

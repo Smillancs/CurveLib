@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.5)
-
 add_executable(Differential_Geometry WIN32
 main.cpp
 CurveRenderer.h
@@ -15,18 +13,17 @@ gVertexBuffer.h
 gVertexBuffer.cpp
 MyApp.h
 MyApp.cpp
-Utils.hpp
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11")
 set(tarver "x86")
 
 
 if(UNIX)
+	set(libdir "usr/lib/")
 	include_directories(/usr/include/SDL2)
-	find_library(GLEW_LIB REQUIRED GLEW)
-	find_library(GLU_LIB REQUIRED GLU)
-	find_library(OGL_LIB REQUIRED GL)
+	find_library(GLEW_LIB REQUIRED GLEW HINTS ${libdir})
+	find_library(GLU_LIB REQUIRED GLU HINTS ${libdir})
+	find_library(OGL_LIB REQUIRED GL HINTS ${libdir})
 endif()
 if(WIN32)
 	set(libdir "../OGLPack/lib/${tarver}")

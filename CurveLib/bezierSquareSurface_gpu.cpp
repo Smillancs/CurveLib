@@ -1,4 +1,4 @@
-﻿#include "BezierSquareSurface.h"
+﻿#include "bezierSquareSurface.h"
 
 #ifdef GPGPU
 

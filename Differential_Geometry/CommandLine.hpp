@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utils.hpp"
+#include "../CurveLib/Utils.hpp"
 #include "Examples.hpp"
 #include "../CurveLib/GeomInvariant.hpp"
 #include "../CurveLib/SimpleCurves.hpp"
