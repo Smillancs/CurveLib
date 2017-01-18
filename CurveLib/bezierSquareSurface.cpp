@@ -69,7 +69,7 @@ std::vector<Eigen::Vector3f> BezierSquareSurf::deCasteljauEval(const float t, co
 
 Eigen::Vector3f BezierSquareSurf::BernsteinEval(const float t)
 {
-	Eigen::Vector3f temp = Eigen::Vector3f(0,0);
+	Eigen::Vector3f temp = Eigen::Vector3f(0,0,0);
 	size_t n = cp.size();
 	for(size_t i = 0; i < n; ++i)
 	{
@@ -85,7 +85,7 @@ BezierSquareSurf BezierSquareSurf::Diff(const size_t order, const bool returnAsH
 	size_t n = cp.size()-order;
 	for(size_t i = 0; i < n; ++i)
 	{
-		Eigen::Vector3f lcp = {0,0};
+		Eigen::Vector3f lcp = {0,0,0};
 		for (size_t j = 0; j < order; ++j)
 		{
 			lcp += binomial(order,j)*pow(-1,order-j)*cp[i+j];
