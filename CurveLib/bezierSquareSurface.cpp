@@ -11,7 +11,7 @@ BezierSquareSurf::BezierSquareSurf(const std::vector<std::vector<Eigen::Vector3f
 	RegenerateCoeff();
 }
 
-BezierSquareSurf::BezierSquareSurf(const std::vector<std::vector<ControlPoint>> &_cp)
+BezierSquareSurf::BezierSquareSurf(const std::vector<std::vector<glm::vec3>> &_cp)
 	: mainCoeff(1.0)
 {
 	for (auto &p : _cp)

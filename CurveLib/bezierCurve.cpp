@@ -11,7 +11,7 @@ BezierCurve::BezierCurve(const std::vector<Eigen::Vector3f> &_cp)
 	RegenerateCoeff();
 }
 
-BezierCurve::BezierCurve(const std::vector<ControlPoint> &_cp)
+BezierCurve::BezierCurve(const std::vector<glm::vec3> &_cp)
 	: mainCoeff(1.0)
 {
 	for (auto &p : _cp)

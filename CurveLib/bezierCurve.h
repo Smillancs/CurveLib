@@ -18,17 +18,12 @@ class BezierCurve;
 
 typedef std::pair<BezierCurve, BezierCurve> SubCurves;
 
-struct ControlPoint
-{
-	double x,y,z;
-};
-
 class BezierCurve : public Curve
 {
 public:
 	BezierCurve();
 	BezierCurve(const std::vector<Eigen::Vector3f> &_cp);
-	BezierCurve(const std::vector<ControlPoint> &_cp);
+	BezierCurve(const std::vector<glm::vec3> &_cp);
 
 	BezierCurve operator=(const BezierCurve & _other);
 

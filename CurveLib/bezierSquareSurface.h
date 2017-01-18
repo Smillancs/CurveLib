@@ -14,17 +14,13 @@
 #include <Eigen\Core>
 #include "all_incl.h"
 
-struct ControlPoint
-{
-	double x,y,z;
-};
 
 class BezierSquareSurf
 {
 public:
 	BezierSquareSurf();
 	BezierSquareSurf(const std::vector<std::vector<Eigen::Vector3f>> &_cp);
-	BezierSquareSurf(const std::vector<std::vector<ControlPoint>> &_cp);
+	BezierSquareSurf(const std::vector<std::vector<glm::vec3>> &_cp);
 
 	BezierSquareSurf operator=(const BezierSquareSurf & _other);
 
