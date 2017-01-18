@@ -2,6 +2,8 @@
 #define ALL_INCL_H
 #include <vector>
 #include <cassert>
+#include <stddef.h>
+#include <stdint.h>
 
 /*
 std::vector<int> factorial(int n, int k)

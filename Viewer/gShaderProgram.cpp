@@ -95,7 +95,7 @@ GLuint gShaderProgram::loadShader(GLenum _shaderType, const char* _fileName)
 	if ( loadedShader == 0 )
 	{
 		if (m_verbose)
-			fprintf(stderr, "Hiba a shader inicializálásakor (glCreateShader)!", _fileName);
+			fprintf(stderr, "Hiba a %s shader inicializálásakor (glCreateShader)!", _fileName);
 		return 0;
 	}
 

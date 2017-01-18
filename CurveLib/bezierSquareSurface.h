@@ -8,10 +8,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform2.hpp>
-#include <GL/GLU.h>
+#include <GL/glu.h>
 #include <math.h>
 #endif
-#include <Eigen\Core>
+#include <Eigen/Core>
 #include "all_incl.h"
 
 
