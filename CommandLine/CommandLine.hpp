@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../CurveLib/Utils.hpp"
-#include "Examples.hpp"
+#include "../CurveLib/Examples.hpp"
 #include "../CurveLib/GeomInvariant.hpp"
 #include "../CurveLib/SimpleCurves.hpp"
 
@@ -59,6 +59,20 @@ bool CommandLine::curveProcess(const std::string& cmd)
 		activeCurve = atoi(cmd.substr(4).c_str());
 		std::cout << activeCurve << std::endl;
 	}
+	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("K"))
+	{
+		const char* s = cmd.substr(2).c_str();
+		double t;
+		sscanf(s, "%lf", &t);
+		std::cout << GeomInv::K(ExampleHandler::get(activeCurve), t) << std::endl;
+	}
+	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("T"))
+	{
+		const char* s = cmd.substr(2).c_str();
+		double t;
+		sscanf(s, "%lf", &t);
+		std::cout << GeomInv::T(ExampleHandler::get(activeCurve), t) << std::endl;
+	}
 	return true;
 }
 
@@ -75,6 +89,8 @@ bool CommandLine::runTest()
 	assert_dvec3_equal(b(c,0.324), glm::dvec3(0,0,1));
 	assert_double_equal(K(c,0.6), 3.0);
 	assert_double_equal(T(c,0.4), 0.0);
+	
+	// TODO: tests for Bezier curves
 	
 	std::cout << "All tests ran in order." << std::endl;
 	return true;

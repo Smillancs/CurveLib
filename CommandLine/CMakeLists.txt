@@ -1,18 +1,6 @@
-add_executable(Differential_Geometry WIN32
+add_executable(CommandLine WIN32
 main.cpp
-CurveRenderer.h
-CurveRenderer.cpp
 CommandLine.hpp
-gCamera.h
-gCamera.cpp
-Examples.hpp
-Examples.cpp
-gShaderProgram.h
-gShaderProgram.cpp
-gVertexBuffer.h
-gVertexBuffer.cpp
-MyApp.h
-MyApp.cpp
 )
 
 set(tarver "x86")
@@ -38,10 +26,10 @@ find_library(SDL2main_LIB NAME SDL2main HINTS ${libdir})
 find_library(SDL2_LIB NAME SDL2 HINTS ${libdir})
 find_library(SDL2_image_LIB NAME SDL2_image HINTS ${libdir})
 
-target_link_libraries(Differential_Geometry PUBLIC ${GLEW_LIB})
-target_link_libraries(Differential_Geometry PUBLIC ${GLU_LIB})
-target_link_libraries(Differential_Geometry PUBLIC ${OGL_LIB})
-target_link_libraries(Differential_Geometry PUBLIC ${SDL2main_LIB})
-target_link_libraries(Differential_Geometry PUBLIC ${SDL2_LIB})
-target_link_libraries(Differential_Geometry PUBLIC ${SDL2_image_LIB})
-target_link_libraries(Differential_Geometry PUBLIC CurveLib)
+target_link_libraries(CommandLine PUBLIC ${GLEW_LIB})
+target_link_libraries(CommandLine PUBLIC ${GLU_LIB})
+target_link_libraries(CommandLine PUBLIC ${OGL_LIB})
+target_link_libraries(CommandLine PUBLIC ${SDL2main_LIB})
+target_link_libraries(CommandLine PUBLIC ${SDL2_LIB})
+target_link_libraries(CommandLine PUBLIC ${SDL2_image_LIB})
+target_link_libraries(CommandLine PUBLIC CurveLib)

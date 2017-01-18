@@ -1,8 +1,7 @@
 #include "MyApp.h"
 #include "GLUtils.hpp"
 
-//#include "GeomInvariant.hpp"
-#include "Examples.hpp"
+#include "../CurveLib/Examples.hpp"
 #include "CurveRenderer.h"
 
 //#include <GL/GLU.h>

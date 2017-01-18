@@ -1,5 +1,9 @@
 #include "Examples.hpp"
 
+#include "SimpleCurves.hpp"
+#include "bezierCurve.h"
+
+
 bool ExampleHandler::ready = false;
 std::vector<Curve*> ExampleHandler::examples;
 

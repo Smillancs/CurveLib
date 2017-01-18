@@ -16,6 +16,8 @@ SimpleCurves.hpp
 GeomInvariant.hpp
 GeomInvariant.cpp
 Utils.hpp
+Examples.hpp
+Examples.cpp
 )
 
 

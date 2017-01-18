@@ -1,8 +1,6 @@
 #pragma once
 
-#include "../CurveLib/bezierCurve.h"
-#include "../CurveLib/Curve.hpp"
-#include "../CurveLib/SimpleCurves.hpp"
+#include "Curve.hpp"
 
 #include <vector>
 
