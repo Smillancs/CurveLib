@@ -29,8 +29,10 @@ public:
 
 	std::vector<Eigen::Vector3f> deCasteljauEval(const float t, const size_t deg);
 	Eigen::Vector3f BernsteinEval(const float t);
-	
-	BezierCurve Diff(const size_t order = 1, const bool returnAsHodo = false);
+
+	Eigen::Vector3f ForwardDiff(const size_t order, const size_t idx);
+	Eigen::Vector3f Diff(const size_t order, const float t);
+	std::vector<Eigen::Vector3f> BezierCurve::Hodo(const size_t order);
 
 	SubCurves Subdivision(const double t);
 	BezierCurve Elevation();
@@ -46,10 +48,9 @@ public:
 
 	virtual glm::dvec3 dnf(double t, unsigned n) override 
 	{ 
-		BezierCurve diff = Diff(n);
-		auto diffEval = diff.BernsteinEval(t);
+		Eigen::Vector3f diff = Diff(n,t);
 
-		return glm::dvec3(diffEval.x(),diffEval.y(),diffEval.z());
+		return glm::dvec3(diff.x(), diff.y(), diff.z());
 	}
 
 	virtual glm::dvec3 f(double t) override

@@ -62,48 +62,72 @@ std::vector<Eigen::Vector3f> BezierCurve::deCasteljauEval(const float t, const s
 	return tempCp;
 }
 
+double BezierCurve::Bernstein(const size_t n, const size_t i, const double t) const
+{
+	return binomial(n,i)*pow(t,i)*pow(1.0-t,n-i);
+}
+
+double BezierCurve::Bernstein(const size_t i, const double t) const
+{
+	auto n = cp.size();
+	return coeff[i]*pow(t, i)*pow(1.0-t, n-i);
+}
+
 Eigen::Vector3f BezierCurve::BernsteinEval(const float t)
 {
 	Eigen::Vector3f temp = Eigen::Vector3f(0,0,0);
 	size_t n = cp.size();
 	for(size_t i = 0; i < n; ++i)
 	{
-		temp += coeff[i]*pow(t,i)*pow(1-t,n-i)*cp[i];
+		temp += Bernstein(i,t)*cp[i];
 	}
 	return mainCoeff*temp;
 }
 
-//todo cachelni az evalhoz
-BezierCurve BezierCurve::Diff(const size_t order, const bool returnAsHodo)
+std::vector<Eigen::Vector3f> BezierCurve::Hodo(const size_t order)
 {
-	BezierCurve diffCoeff;
 	size_t n = cp.size()-order;
+	std::vector<Eigen::Vector3f> coeff(n);
 	for(size_t i = 0; i < n; ++i)
 	{
-		Eigen::Vector3f lcp = {0,0,0};
-		for (size_t j = 0; j < order; ++j)
-		{
-			lcp += binomial(order,j)*pow(-1,order-j)*cp[i+j];
-		}
-		diffCoeff.addControlPoint(lcp);
+		coeff.push_back(ForwardDiff(order,i));
 	}
-	if (returnAsHodo)
+	auto tmpSub = coeff[0], tmpMain = coeff[1];
+	for (size_t i = 1; i < coeff.size(); ++i)
 	{
-		auto tmpSub = diffCoeff.cp[0], tmpMain = diffCoeff.cp[1];
-		for (size_t i = 1; i < diffCoeff.cp.size(); ++i)
-		{
-			auto tmp = diffCoeff.cp[i];
-			diffCoeff.cp[i] = tmpMain - tmpSub;
-			tmpSub = tmpMain, tmpMain = tmp;
-		}
+		auto tmp = coeff[i];
+		coeff[i] = tmpMain - tmpSub;
+		tmpSub = tmpMain, tmpMain = tmp;
 	}
 
-	diffCoeff.RegenerateCoeff();
-	diffCoeff.mainCoeff = factorial(cp.size())/factorial(n);
-
-	return diffCoeff;
+	return coeff;
 }
 
+Eigen::Vector3f BezierCurve::ForwardDiff(const size_t order, const size_t idx)
+{
+	Eigen::Vector3f delta = {0,0,0};
+	int alternate = (order%2)?-1:1;
+	for (size_t j = 0; j < order; ++j)
+	{
+		delta += binomial(order, j)*alternate*cp[idx+j];
+		alternate*=-1;
+	}
+	return delta;
+}
+
+
+Eigen::Vector3f BezierCurve::Diff(const size_t order, const float t)
+{
+	Eigen::Vector3f eval;
+	size_t n = cp.size() - order;
+
+	for (size_t j = 0; j < n; ++j)
+	{
+		eval += ForwardDiff(order,j)*Bernstein(n,j,t);
+	}
+
+	return eval;
+}
 
 SubCurves BezierCurve::Subdivision(const double t)
 {
