@@ -12,4 +12,9 @@ class ExampleHandler
 
 public:
 	static Curve& get(int i);
+	
+	static size_t size();
+	
+private:
+	static void generate();
 };
