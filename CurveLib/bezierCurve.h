@@ -27,6 +27,8 @@ public:
 
 	BezierCurve operator=(const BezierCurve & _other);
 
+	typedef std::pair<double, Eigen::Vector3f> Parametric;
+
 	std::vector<Eigen::Vector3f> deCasteljauEval(const float t, const size_t deg);
 	Eigen::Vector3f BernsteinEval(const float t);
 
@@ -38,13 +40,13 @@ public:
 	BezierCurve Elevation();
 	BezierCurve Reduction();
 
-	void ToExplicit();
-	void ToParametric();
+	BezierCurve ToExplicit();
+	Parametric ToParametric(const double t);
 
 	void addControlPoint(const Eigen::Vector3f _cp);
 
-	inline std::vector<Eigen::Vector3f> GetControlPoints() const { return cp; }
-
+	std::vector<Eigen::Vector3f> GetControlPoints() const { return cp; }
+	
 
 	virtual glm::dvec3 dnf(double t, unsigned n) override 
 	{ 
@@ -66,7 +68,8 @@ private:
 	std::vector<GLuint> shaders;
 	GLuint m_vaoID, m_vboID;
 #endif
-
+	double Bernstein(const size_t n, const size_t i, const double t) const;
+	double Bernstein(const size_t i, const double t) const;
 	std::vector<Eigen::Vector3f> cp;
 	std::vector<double> coeff;
 	bool dirtyCoeff;

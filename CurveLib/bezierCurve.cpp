@@ -143,11 +143,11 @@ SubCurves BezierCurve::Subdivision(const double t)
 		dividedCmp.second.cp[i] = Eigen::Vector3f(0, 0);
 		for (size_t j = 0; j <= i; ++j)
 		{
-			dividedCmp.first.cp[i] += cp[j]*binomial(i, j)*pow(t, j)*pow(1-t, n-j);
+			dividedCmp.first.cp[i] += cp[j]*Bernstein(i, j, t);
 		}
 		for (size_t j = 0; j <= n-i; ++j)
 		{
-			dividedCmp.second.cp[i] += cp[j]*binomial(n-i, j)*pow(t, j)*pow(1-t, n-j);
+			dividedCmp.second.cp[i] += cp[j]*Bernstein(n-i, j, t);
 		}
 	}
 
@@ -170,30 +170,52 @@ BezierCurve BezierCurve::Elevation()
 
 BezierCurve BezierCurve::Reduction()
 {
+	BezierCurve reduced;
+	reduced.cp.clear();
+
 	const size_t n = cp.size();
 	std::vector<Eigen::Vector3f> biLR = {}, biRL = {};
 	for (size_t i = 0; i < n-1; ++i)
 	{
-		biLR.push_back((n*cp[i]-i*biLR[i-1])/(n-1));
+		biLR.push_back((n*cp[i]-i*biLR[i-1])/(n-i));
 	}
 	for (size_t i = n; i < 1; --i)
 	{
 		biRL.push_back((n*cp[i] - (n-i)*biRL[i+1])/i);
 	}
-	//todo lin komb csebisevvel farin 86
-	return BezierCurve();
+	for (size_t i = 0; i < n-1; ++i)
+	{
+		double L = 0;
+		for (size_t j = 0; j < i; ++j)
+		{
+			L += binomial(2*n,2*j);
+		}
+		L /= 1/(pow(2,2*n-1));
+		reduced.addControlPoint((1-L)*biLR[i]+L*biRL[i]);
+	}
+
+	return reduced;
 }
 
 
-void BezierCurve::ToExplicit()
+BezierCurve::Parametric BezierCurve::ToParametric(const double t)
 {
-	//todo farin 87
+	BezierCurve::Parametric eval;
+	size_t n = cp.size();
+	for (size_t i = 0; i < n; ++i)
+	{
+		double b = Bernstein(n,i,t);
+		eval.first+=i*b;
+		eval.second+=cp[i]*b;
+	}
+	eval.first/=static_cast<double>(n);
+	return eval;
 }
 
 
-void BezierCurve::ToParametric()
+BezierCurve BezierCurve::ToExplicit()
 {
-
-}//ez kb return this
+	return *this;
+}
 
 #endif
