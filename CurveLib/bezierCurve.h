@@ -57,6 +57,8 @@ public:
 		Eigen::Vector3f bez = BernsteinEval(t);
 		return glm::dvec3(bez.x(), bez.y(), bez.z());
 	}
+	
+	virtual std::string about() override;
 
 
 private:

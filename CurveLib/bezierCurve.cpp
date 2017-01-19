@@ -172,4 +172,14 @@ void BezierCurve::ToParametric()
 
 }//ez kb return this
 
+std::string BezierCurve::about()
+{
+	std::stringstream s;
+	s << "Bezier curve with control points: ";
+	Eigen::IOFormat HeavyFmt(Eigen::FullPrecision, 0, ", ", ";\n", "(", ")", "", "");
+	for(auto it : cp)
+		s << it.transpose().format(HeavyFmt) << "; ";
+	return s.str();
+}
+
 #endif

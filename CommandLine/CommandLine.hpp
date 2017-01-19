@@ -4,6 +4,7 @@
 #include "../CurveLib/Examples.hpp"
 #include "../CurveLib/GeomInvariant.hpp"
 #include "../CurveLib/SimpleCurves.hpp"
+#include "../CurveLib/bezierCurve.h"
 
 #include <iostream>
 #include <vector>
@@ -56,8 +57,14 @@ bool CommandLine::curveProcess(const std::string& cmd)
 {
 	if(cmd.length()>3 && cmd.substr(0,3)==std::string("set"))
 	{
-		activeCurve = atoi(cmd.substr(4).c_str());
-		std::cout << activeCurve << std::endl;
+		int index = atoi(cmd.substr(4).c_str());
+		if(index < ExampleHandler::size())
+			activeCurve = index;
+		std::cout << "Curve #" << activeCurve << ": " << ExampleHandler::get(activeCurve).about() << std::endl;
+	}	
+	else if(cmd.length()>=4 && cmd.substr(0,4)==std::string("info"))
+	{
+		std::cout << "Curve #" << activeCurve << ": " << ExampleHandler::get(activeCurve).about() << std::endl;
 	}
 	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("K"))
 	{

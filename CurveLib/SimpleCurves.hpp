@@ -17,6 +17,8 @@ public:
 	glm::dvec3 df(double t){ return glm::normalize(y - x); }
 	glm::dvec3 ddf(double t){ return glm::dvec3(0.0); }
 	glm::dvec3 dddf(double t){ return glm::dvec3(0.0); }
+	
+	std::string about();
 
 private:
 	glm::dvec3 x;
@@ -35,6 +37,7 @@ public:
 	glm::dvec3 ddf(double t){ return -r*glm::dvec3(cos(2 * glm::pi<float>()*t), sin(2 * glm::pi<float>()*t), 0.0); }
 	glm::dvec3 dddf(double t){ return -r*glm::dvec3(-sin(2 * glm::pi<float>()*t), cos(2 * glm::pi<float>()*t), 0.0); }
 
+	std::string about();
 private:
 	glm::dvec3 o;
 	double r;
@@ -51,7 +54,31 @@ public:
 	glm::dvec3 df(double t){ return glm::dvec3(a*cos(t) - a*t*sin(t), a*sin(t) + a*t*cos(t), a); }
 	glm::dvec3 ddf(double t){ return glm::dvec3(-a*sin(t) - a*t*cos(t) - a*sin(t), a*cos(t) - a*t*sin(t) + a*cos(t), 0); }
 	glm::dvec3 dddf(double t){ return glm::dvec3(-a*cos(t) + a*t*sin(t) - a*cos(t) - a*cos(t), -a*sin(t) - a*t*cos(t) - a*sin(t) - a*sin(t), 0); }
+	
+	std::string about();
 private:
 	glm::dvec3 o;
 	double a;
 };
+
+
+inline std::string Line::about()
+{
+	std::stringstream s;
+	s << "Line between " << glm::to_string(x) << " and " << glm::to_string(y);
+	return s.str();
+}
+
+inline std::string Circle::about()
+{
+	std::stringstream s;
+	s << "Circle with center " << glm::to_string(o) << " and radius " << r << " (in XY plane)";
+	return s.str();
+}
+
+inline std::string Spiral::about()
+{
+	std::stringstream s;
+	s << "Spiral with parameters " << glm::to_string(o) << " and " << a;
+	return s.str();
+}

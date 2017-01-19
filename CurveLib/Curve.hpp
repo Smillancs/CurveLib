@@ -4,6 +4,7 @@
 #include <glm/gtc/constants.hpp>
 
 #include <math.h>
+#include <string>
 
 class Curve
 {
@@ -19,4 +20,6 @@ public:
 	virtual glm::dvec3 ddf(double t){ return dnf(t, 2); }
 	virtual glm::dvec3 dddf(double t){ return dnf(t, 3); }
 
+
+	virtual std::string about(){ return "Unknown curve"; };
 };
