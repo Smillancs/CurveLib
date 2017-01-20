@@ -33,10 +33,12 @@ void ExampleHandler::generate()
 	examples.push_back(new Spiral(glm::dvec3(0, 0, 0), 5));
 
 	std::vector<glm::vec3> cps;
-	cps.push_back(glm::vec3(0,0,10));
-	cps.push_back(glm::vec3(0,5,0));
-	cps.push_back(glm::vec3(0,10,0));
-	cps.push_back(glm::vec3(-10,0,0));
+	cps.push_back(glm::vec3(0, 0, 4));
+	cps.push_back(glm::vec3(0, 4, 0));
+	cps.push_back(glm::vec3(-8, 2, 0));
+	cps.push_back(glm::vec3(0, 4, -2));
+	cps.push_back(glm::vec3(-2, -8, 4));
+	cps.push_back(glm::vec3(0, 10, 0));
 
 	examples.push_back(new BezierCurve(cps));
 	ready = true;
