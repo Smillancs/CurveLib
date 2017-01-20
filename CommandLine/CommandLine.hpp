@@ -21,6 +21,8 @@ private:
 	
 	bool runTest();
 	
+	bool printHelp();
+	
 	size_t activeCurve = 0;
 };
 
@@ -43,10 +45,14 @@ void CommandLine::run()
 
 bool CommandLine::process(const std::string& cmd)
 {
-	if(cmd.length()>6 && cmd.substr(0,6)==std::string("curve "))
+	if(cmd=="curve")
+		return curveProcess("");
+	if(cmd.length()>5 && cmd.substr(0,5)==std::string("curve"))
 		return curveProcess(cmd.substr(6));
 	if(cmd=="test")
 		return runTest();
+	if(cmd=="help")
+		return printHelp();
 	if(cmd=="quit")
 		return false;
 	else
@@ -66,6 +72,34 @@ bool CommandLine::curveProcess(const std::string& cmd)
 	{
 		std::cout << "Curve #" << activeCurve << ": " << ExampleHandler::get(activeCurve).about() << std::endl;
 	}
+	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("f"))
+	{
+		const char* s = cmd.substr(2).c_str();
+		double t;
+		sscanf(s, "%lf", &t);
+		std::cout << glm::to_string(ExampleHandler::get(activeCurve).f(t)) << std::endl;
+	}
+	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("d"))
+	{
+		const char* s = cmd.substr(2).c_str();
+		double t;
+		sscanf(s, "%lf", &t);
+		std::cout << glm::to_string(ExampleHandler::get(activeCurve).dnf(t,1)) << std::endl;
+	}
+	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("dd"))
+	{
+		const char* s = cmd.substr(2).c_str();
+		double t;
+		sscanf(s, "%lf", &t);
+		std::cout << glm::to_string(ExampleHandler::get(activeCurve).dnf(t,2)) << std::endl;
+	}
+	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("ddd"))
+	{
+		const char* s = cmd.substr(2).c_str();
+		double t;
+		sscanf(s, "%lf", &t);
+		std::cout << glm::to_string(ExampleHandler::get(activeCurve).dnf(t,3)) << std::endl;
+	}
 	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("K"))
 	{
 		const char* s = cmd.substr(2).c_str();
@@ -80,6 +114,12 @@ bool CommandLine::curveProcess(const std::string& cmd)
 		sscanf(s, "%lf", &t);
 		std::cout << GeomInv::T(ExampleHandler::get(activeCurve), t) << std::endl;
 	}
+	else if(cmd == "help")
+	{
+		std::cout << "Operations on curves:\n\tset - set active curve (from examples)\n\tinfo - print information about active curve\n\tf - evaluate curve in given parameter\n\td, dd, ddd - evaluate derivative of active curve\n\tK, T - evaluate curvature and torsion of active curve" << std::endl;
+	}
+	else
+		throw Exception("This command does not exist for curves");
 	return true;
 }
 
@@ -100,5 +140,12 @@ bool CommandLine::runTest()
 	// TODO: tests for Bezier curves
 	
 	std::cout << "All tests ran in order." << std::endl;
+	return true;
+}
+
+
+bool CommandLine::printHelp()
+{
+	std::cout << "Available commands: \n\tcurve - perform operations on curves (`curve help` for info)\n\ttest - run unit tests\n\tquit - quit program\n";
 	return true;
 }
