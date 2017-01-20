@@ -31,6 +31,8 @@ public:
 
 	std::vector<Eigen::Vector3f> deCasteljauEval(const float t, const size_t deg);
 	Eigen::Vector3f BernsteinEval(const float t);
+	
+	void CheckCoeff();
 
 	Eigen::Vector3f ForwardDiff(const size_t order, const size_t idx);
 	Eigen::Vector3f Diff(const size_t order, const float t);

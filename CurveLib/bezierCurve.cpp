@@ -34,10 +34,19 @@ BezierCurve BezierCurve::operator=(const BezierCurve & _other)
 void BezierCurve::RegenerateCoeff()
 {
 	coeff.clear();
-	size_t n = cp.size();
-	for (size_t i = 0; i < n; ++i)
+	size_t n = cp.size()-1;
+	for (size_t i = 0; i <= n; ++i)
 		coeff.push_back(binomial(n, i));
 	dirtyCoeff = false;
+}
+
+void BezierCurve::CheckCoeff()
+{
+	if (dirtyCoeff)
+	{
+		RegenerateCoeff();
+		dirtyCoeff = false;
+	}
 }
 
 void BezierCurve::addControlPoint(const Eigen::Vector3f _cp)
@@ -69,12 +78,13 @@ double BezierCurve::Bernstein(const size_t n, const size_t i, const double t) co
 
 double BezierCurve::Bernstein(const size_t i, const double t) const
 {
-	auto n = cp.size();
+	auto n = cp.size()-1;
 	return coeff[i]*pow(t, i)*pow(1.0-t, n-i);
 }
 
 Eigen::Vector3f BezierCurve::BernsteinEval(const float t)
 {
+	CheckCoeff();
 	Eigen::Vector3f temp = Eigen::Vector3f(0,0,0);
 	size_t n = cp.size();
 	for(size_t i = 0; i < n; ++i)
@@ -107,7 +117,7 @@ Eigen::Vector3f BezierCurve::ForwardDiff(const size_t order, const size_t idx)
 {
 	Eigen::Vector3f delta = {0,0,0};
 	int alternate = (order%2)?-1:1;
-	for (size_t j = 0; j < order; ++j)
+	for (size_t j = 0; j <= order; ++j)
 	{
 		delta += binomial(order, j)*alternate*cp[idx+j];
 		alternate*=-1;
@@ -118,19 +128,21 @@ Eigen::Vector3f BezierCurve::ForwardDiff(const size_t order, const size_t idx)
 
 Eigen::Vector3f BezierCurve::Diff(const size_t order, const float t)
 {
-	Eigen::Vector3f eval;
-	size_t n = cp.size() - order;
+	CheckCoeff();
+	Eigen::Vector3f eval = {0,0,0};
+	size_t n = cp.size() - order -1;
 
-	for (size_t j = 0; j < n; ++j)
+	for (size_t j = 0; j <= n; ++j)
 	{
 		eval += ForwardDiff(order,j)*Bernstein(n,j,t);
 	}
-
+	eval*=factorial(cp.size()-1)/static_cast<double>(factorial(n));
 	return eval;
 }
 
 SubCurves BezierCurve::Subdivision(const double t)
 {
+	CheckCoeff();
 	SubCurves dividedCmp;
 
 	std::vector<Eigen::Vector3f> tempCp = cp;
@@ -170,6 +182,7 @@ BezierCurve BezierCurve::Elevation()
 
 BezierCurve BezierCurve::Reduction()
 {
+	CheckCoeff();
 	BezierCurve reduced;
 	reduced.cp.clear();
 
@@ -200,6 +213,7 @@ BezierCurve BezierCurve::Reduction()
 
 BezierCurve::Parametric BezierCurve::ToParametric(const double t)
 {
+	CheckCoeff();
 	BezierCurve::Parametric eval;
 	size_t n = cp.size();
 	for (size_t i = 0; i < n; ++i)
