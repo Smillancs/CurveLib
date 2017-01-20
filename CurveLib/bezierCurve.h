@@ -34,7 +34,7 @@ public:
 
 	Eigen::Vector3f ForwardDiff(const size_t order, const size_t idx);
 	Eigen::Vector3f Diff(const size_t order, const float t);
-	std::vector<Eigen::Vector3f> BezierCurve::Hodo(const size_t order);
+	std::vector<Eigen::Vector3f> Hodo(const size_t order);
 
 	SubCurves Subdivision(const double t);
 	BezierCurve Elevation();
