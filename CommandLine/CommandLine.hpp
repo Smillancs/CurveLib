@@ -137,8 +137,23 @@ bool CommandLine::runTest()
 	assert_double_equal(K(c,0.6), 3.0);
 	assert_double_equal(T(c,0.4), 0.0);
 	
-	// TODO: tests for Bezier curves
-	
+	//TODO: write tests for other bezier functions too
+	std::vector<glm::vec3> cps;
+	cps.push_back(glm::vec3(0, 2, 0));
+	cps.push_back(glm::vec3(4, 0, 0));
+	cps.push_back(glm::vec3(0, 8, 16));
+	cps.push_back(glm::vec3(-4, 0, 2));
+	BezierCurve bez(cps);
+
+	auto first = bez.GetControlPoints().at(0);
+	auto last = bez.GetControlPoints().at(bez.GetControlPoints().size()-1);
+
+	assert_dvec3_equal(bez.f(0),glm::dvec3(first.x(),first.y(),first.z()));
+	assert_dvec3_equal(bez.f(1),glm::dvec3(last.x(),last.y(),last.z()));
+	assert_dvec3_equal(e(bez, 0.5), glm::dvec3(-0.388514, 0.291386, 0.874157));
+	assert_dvec3_equal(n(bez, 0.5), glm::dvec3(-0.917284, -0.212334, -0.336903));
+	assert_double_equal(T(bez, 0.5), 53.166320204);
+
 	std::cout << "All tests ran in order." << std::endl;
 	return true;
 }
