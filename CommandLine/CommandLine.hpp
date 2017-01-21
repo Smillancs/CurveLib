@@ -79,21 +79,21 @@ bool CommandLine::curveProcess(const std::string& cmd)
 		sscanf(s, "%lf", &t);
 		std::cout << glm::to_string(ExampleHandler::get(activeCurve).f(t)) << std::endl;
 	}
-	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("d"))
+	else if(cmd.length()>2 && cmd.substr(0,2)==std::string("d "))
 	{
 		const char* s = cmd.substr(2).c_str();
 		double t;
 		sscanf(s, "%lf", &t);
 		std::cout << glm::to_string(ExampleHandler::get(activeCurve).dnf(t,1)) << std::endl;
 	}
-	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("dd"))
+	else if(cmd.length()>3 && cmd.substr(0,3)==std::string("dd "))
 	{
 		const char* s = cmd.substr(2).c_str();
 		double t;
 		sscanf(s, "%lf", &t);
 		std::cout << glm::to_string(ExampleHandler::get(activeCurve).dnf(t,2)) << std::endl;
 	}
-	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("ddd"))
+	else if(cmd.length()>4 && cmd.substr(0,4)==std::string("ddd "))
 	{
 		const char* s = cmd.substr(2).c_str();
 		double t;
