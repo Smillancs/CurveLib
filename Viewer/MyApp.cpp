@@ -20,7 +20,7 @@ CMyApp::~CMyApp(void)
 
 bool CMyApp::Init()
 {
-	glClearColor(0.125f, 0.25f, 0.5f, 1.0f);
+	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);

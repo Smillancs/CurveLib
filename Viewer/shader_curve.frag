@@ -17,5 +17,5 @@ out vec4 fs_out_col;
 
 void main()
 {
-	fs_out_col = vec4(vs_out_k/30.0, vs_out_t/10.0,0, 1);
+	fs_out_col = vec4(vs_out_k, 5*vs_out_t, -5*vs_out_t, 1);
 }
