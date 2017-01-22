@@ -100,6 +100,27 @@ bool CommandLine::curveProcess(const std::string& cmd)
 		sscanf(s, "%lf", &t);
 		std::cout << glm::to_string(ExampleHandler::get(activeCurve).dnf(t,3)) << std::endl;
 	}
+	else if(cmd.length()>2 && cmd.substr(0,2)==std::string("e "))
+	{
+		const char* s = cmd.substr(2).c_str();
+		double t;
+		sscanf(s, "%lf", &t);
+		std::cout << glm::to_string(GeomInv::e(ExampleHandler::get(activeCurve), t)) << std::endl;
+	}
+	else if(cmd.length()>2 && cmd.substr(0,2)==std::string("n "))
+	{
+		const char* s = cmd.substr(2).c_str();
+		double t;
+		sscanf(s, "%lf", &t);
+		std::cout << glm::to_string(GeomInv::n(ExampleHandler::get(activeCurve), t)) << std::endl;
+	}
+	else if(cmd.length()>2 && cmd.substr(0,2)==std::string("b "))
+	{
+		const char* s = cmd.substr(2).c_str();
+		double t;
+		sscanf(s, "%lf", &t);
+		std::cout << glm::to_string(GeomInv::b(ExampleHandler::get(activeCurve), t)) << std::endl;
+	}
 	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("K"))
 	{
 		const char* s = cmd.substr(2).c_str();
@@ -134,7 +155,7 @@ bool CommandLine::runTest()
 	assert_dvec3_equal(e(c,0.5), glm::dvec3(0,-1,0));
 	assert_dvec3_equal(n(c,0.5), glm::dvec3(1,0,0));
 	assert_dvec3_equal(b(c,0.324), glm::dvec3(0,0,1));
-	assert_double_equal(K(c,0.6), 3.0);
+	assert_double_equal(K(c,0.6), 0.333333);
 	assert_double_equal(T(c,0.4), 0.0);
 	
 	//TODO: write tests for other bezier functions too
@@ -152,7 +173,7 @@ bool CommandLine::runTest()
 	assert_dvec3_equal(bez.f(1),glm::dvec3(last.x(),last.y(),last.z()));
 	assert_dvec3_equal(e(bez, 0.5), glm::dvec3(-0.388514, 0.291386, 0.874157));
 	assert_dvec3_equal(n(bez, 0.5), glm::dvec3(-0.917284, -0.212334, -0.336903));
-	assert_double_equal(T(bez, 0.5), 53.166320204);
+	assert_double_equal(T(bez, 0.5), 0.0860946);
 
 	std::cout << "All tests ran in order." << std::endl;
 	return true;
