@@ -11,7 +11,7 @@ class Line : public Curve
 public:
 	Line(glm::dvec3 a, glm::dvec3 b) :x(a), y(b){}
 
-	glm::dvec3 dnf(double t, unsigned n){ switch (n){ case 1: return df(t); case 2: return ddf(t); case 3: return dddf(t); default: throw UnsupportedDerivativeOrder(n); } }
+	glm::dvec3 dnf(double t, unsigned n){ switch (n){ case 1: return glm::normalize(y - x); case 2: case 3: default: return glm::dvec3(0,0,0); } }
 
 	glm::dvec3 f(double t){ return t*y + (1 - t)*x; }
 	glm::dvec3 df(double t){ return glm::normalize(y - x); }
