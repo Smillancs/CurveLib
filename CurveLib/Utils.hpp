@@ -12,16 +12,14 @@ public:
 	~Exception() throw() {}
 	virtual const char* what() const throw(){return errorString.c_str();}
 
-private:
+protected:
 	std::string errorString;
 };
 
-class UnsupportedDerivativeOrder : public std::exception{
+class UnsupportedDerivativeOrder : public Exception{
 public:
-	UnsupportedDerivativeOrder(int m) :n(m){}
-	const char* what() const throw() { return ("This order of derivatives is not supported (" + std::to_string(n) + ")").c_str(); }
-private:
-	int n;
+	UnsupportedDerivativeOrder(int m) : Exception("This order of derivatives is not supported (" + std::to_string(m) + ")"){}
+	~UnsupportedDerivativeOrder() throw() {}
 };
 
 inline bool assert_double_equal(double a, double b, bool print = true)
