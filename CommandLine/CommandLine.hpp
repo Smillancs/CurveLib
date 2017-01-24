@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <vector>
+#include <sstream>
 
 class CommandLine
 {
@@ -17,7 +18,7 @@ public:
 private:
 	bool process(const std::string& cmd);
 	
-	bool curveProcess(const std::string& cmd);
+	bool curveProcess(std::stringstream& cmd);
 	
 	bool runTest();
 	
@@ -45,99 +46,112 @@ void CommandLine::run()
 
 bool CommandLine::process(const std::string& cmd)
 {
-	if(cmd=="curve")
-		return curveProcess("");
-	if(cmd.length()>5 && cmd.substr(0,5)==std::string("curve"))
-		return curveProcess(cmd.substr(6));
-	if(cmd=="test")
+	std::stringstream str ( cmd );
+	std::string cmd1;
+	str >> cmd1;
+	if(cmd1 == "curve")
+		return curveProcess(str);
+	if(cmd1 == "test")
 		return runTest();
-	if(cmd=="help")
+	if(cmd1 == "help")
 		return printHelp();
-	if(cmd=="quit")
+	if(cmd1 == "quit")
 		return false;
 	else
 		throw Exception("This command cannot be used");
 }
 
-bool CommandLine::curveProcess(const std::string& cmd)
+bool CommandLine::curveProcess(std::stringstream& cmd)
 {
-	if(cmd.length()>3 && cmd.substr(0,3)==std::string("set"))
+	std::string cmd1;
+	cmd >> cmd1;
+	if(cmd1 == "set")
 	{
-		int index = atoi(cmd.substr(4).c_str());
+		cmd >> cmd1;
+		int index = atoi(cmd1.c_str());
 		if(index < ExampleHandler::size())
 			activeCurve = index;
 		std::cout << "Curve #" << activeCurve << ": " << ExampleHandler::get(activeCurve).about() << std::endl;
 	}	
-	else if(cmd.length()>=4 && cmd.substr(0,4)==std::string("info"))
+	else if(cmd1 == "info")
 	{
 		std::cout << "Curve #" << activeCurve << ": " << ExampleHandler::get(activeCurve).about() << std::endl;
 	}
-	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("f"))
+	else if(cmd1 == "f")
 	{
-		const char* s = cmd.substr(2).c_str();
+		cmd >> cmd1;
+		const char* s = cmd1.c_str();
 		double t;
 		sscanf(s, "%lf", &t);
 		std::cout << glm::to_string(ExampleHandler::get(activeCurve).f(t)) << std::endl;
 	}
-	else if(cmd.length()>2 && cmd.substr(0,2)==std::string("d "))
+	else if(cmd1 == "d")
 	{
-		const char* s = cmd.substr(2).c_str();
+		cmd >> cmd1;
+		const char* s = cmd1.c_str();
 		double t;
 		sscanf(s, "%lf", &t);
 		std::cout << glm::to_string(ExampleHandler::get(activeCurve).dnf(t,1)) << std::endl;
 	}
-	else if(cmd.length()>3 && cmd.substr(0,3)==std::string("dd "))
+	else if(cmd1 == "dd")
 	{
-		const char* s = cmd.substr(2).c_str();
+		cmd >> cmd1;
+		const char* s = cmd1.c_str();
 		double t;
 		sscanf(s, "%lf", &t);
 		std::cout << glm::to_string(ExampleHandler::get(activeCurve).dnf(t,2)) << std::endl;
 	}
-	else if(cmd.length()>4 && cmd.substr(0,4)==std::string("ddd "))
+	else if(cmd1 == "ddd")
 	{
-		const char* s = cmd.substr(2).c_str();
+		cmd >> cmd1;
+		const char* s = cmd1.c_str();
 		double t;
 		sscanf(s, "%lf", &t);
 		std::cout << glm::to_string(ExampleHandler::get(activeCurve).dnf(t,3)) << std::endl;
 	}
-	else if(cmd.length()>2 && cmd.substr(0,2)==std::string("e "))
+	else if(cmd1 == "e")
 	{
-		const char* s = cmd.substr(2).c_str();
+		cmd >> cmd1;
+		const char* s = cmd1.c_str();
 		double t;
 		sscanf(s, "%lf", &t);
 		std::cout << glm::to_string(GeomInv::e(ExampleHandler::get(activeCurve), t)) << std::endl;
 	}
-	else if(cmd.length()>2 && cmd.substr(0,2)==std::string("n "))
+	else if(cmd1 == "n")
 	{
-		const char* s = cmd.substr(2).c_str();
+		cmd >> cmd1;
+		const char* s = cmd1.c_str();
 		double t;
 		sscanf(s, "%lf", &t);
 		std::cout << glm::to_string(GeomInv::n(ExampleHandler::get(activeCurve), t)) << std::endl;
 	}
-	else if(cmd.length()>2 && cmd.substr(0,2)==std::string("b "))
+	else if(cmd1 == "b")
 	{
-		const char* s = cmd.substr(2).c_str();
+		cmd >> cmd1;
+		const char* s = cmd1.c_str();
 		double t;
 		sscanf(s, "%lf", &t);
 		std::cout << glm::to_string(GeomInv::b(ExampleHandler::get(activeCurve), t)) << std::endl;
 	}
-	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("K"))
+	else if(cmd1 == "K")
 	{
-		const char* s = cmd.substr(2).c_str();
+		cmd >> cmd1;
+		const char* s = cmd1.c_str();
 		double t;
 		sscanf(s, "%lf", &t);
 		std::cout << GeomInv::K(ExampleHandler::get(activeCurve), t) << std::endl;
 	}
-	else if(cmd.length()>2 && cmd.substr(0,1)==std::string("T"))
+	else if(cmd1 == "T")
 	{
-		const char* s = cmd.substr(2).c_str();
+		cmd >> cmd1;
+		const char* s = cmd1.c_str();
 		double t;
 		sscanf(s, "%lf", &t);
 		std::cout << GeomInv::T(ExampleHandler::get(activeCurve), t) << std::endl;
 	}
-	else if(cmd == "help")
+	else if(cmd1 == "help")
 	{
-		std::cout << "Operations on curves:\n\tset - set active curve (from examples)\n\tinfo - print information about active curve\n\tf - evaluate curve in given parameter\n\td, dd, ddd - evaluate derivative of active curve\n\tK, T - evaluate curvature and torsion of active curve" << std::endl;
+		std::cout << "Operations on curves:\n\tset - set active curve (from examples)\n\tinfo - print information about active curve\n\tf - evaluate curve in given parameter\n\td, dd, ddd - evaluate derivative of active curve\n\te, n, b - evaluate Frenet-frame of active curve\n\tK, T - evaluate curvature and torsion of active curve" << std::endl;
 	}
 	else
 		throw Exception("This command does not exist for curves");
