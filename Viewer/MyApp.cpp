@@ -20,7 +20,7 @@ CMyApp::~CMyApp(void)
 
 bool CMyApp::Init()
 {
-	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+	glClearColor(1.0, 1.0, 1.0, 1.0);
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -35,6 +35,8 @@ bool CMyApp::Init()
 
 
 	m_program_curve.AttachShader(GL_VERTEX_SHADER, "shader_curve.vert");
+	m_program_curve.AttachShader(GL_TESS_CONTROL_SHADER, "beztcs.tcs");
+	m_program_curve.AttachShader(GL_TESS_EVALUATION_SHADER, "beztes.tes");
 	m_program_curve.AttachShader(GL_FRAGMENT_SHADER, "shader_curve.frag");
 
 	m_program_curve.BindAttribLoc(0, "vs_in_pos");
@@ -93,8 +95,8 @@ void CMyApp::Render()
 	m_program_curve.SetUniform( "MVP", mvp );
 
 	m_vb.On();
-
-	m_vb.Draw(GL_LINE_STRIP, 0, N);
+	m_vb.SetPatchVertices(2);
+	m_vb.Draw(GL_PATCHES, 0, 2*(N+1));
 
 	m_vb.Off();
 
