@@ -1,21 +1,19 @@
-#version 130
+#version 420
 
-// pipeline-ból bejövõ per-fragment attribútumok
-in vec3 vs_out_pos;
-in vec3 vs_out_e;
-in vec3 vs_out_n;
-in vec3 vs_out_b;
-in float vs_out_k;
-in float vs_out_t;
+in block
+{
+	vec3	pos;
+	vec3	e;
+	vec3	n;
+	vec3	b;
+	float	k;
+	float	t;
+	vec3	patch_coords;
+} In;
 
-// kimenõ érték - a fragment színe
 out vec4 fs_out_col;
-
-//
-// uniform változók
-//
 
 void main()
 {
-	fs_out_col = vec4(vs_out_k, 5*vs_out_t, -5*vs_out_t, 1);
+	fs_out_col = vec4(In.k, 5*In.t, -5*In.t, 1);
 }
