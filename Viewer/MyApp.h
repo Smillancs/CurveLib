@@ -41,7 +41,7 @@ public:
 
 	void initGraphics();
 
-	const static int N = 1000;
+	const static int N = 50;
 protected:
 	SDL_Window* win;
 	SDL_GLContext context;
