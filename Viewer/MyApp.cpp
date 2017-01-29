@@ -107,7 +107,7 @@ void CMyApp::Render()
 	matWorld = glm::mat4(1.0f);
 	mvp = m_camera.GetViewProj() *matWorld;
 
-	m_program_curve.SetUniform( "MVP", mvp );
+	m_program_basic.SetUniform( "MVP", mvp );
 
 	axes.On();
 	axes.Draw(GL_LINES, 0, 6);
