@@ -9,7 +9,8 @@ class CurveRenderer
 public:
 	CurveRenderer(Curve& curve) :c(curve){}
 
-	void genBuffer(unsigned N, float a, float b);
+	void genBufferNormal(unsigned N, float a, float b);
+	void genBufferTesselation(unsigned N, float a, float b);
 	void changeCurve(Curve& curve){ c = curve; dirty = true; }
 
 	gVertexBuffer getBuffer();

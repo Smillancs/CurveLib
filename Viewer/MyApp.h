@@ -48,8 +48,12 @@ protected:
 
 	gCamera			m_camera;
 	gShaderProgram	m_program_curve;
+	gShaderProgram	m_program_tess;
 	gShaderProgram	m_program_basic;
 	gVertexBuffer	m_vb;
+	gVertexBuffer	m_vbT;
 	gVertexBuffer   axes;
+	
+	bool tesselated = true;
 };
 

@@ -30,13 +30,14 @@ bool CMyApp::Init()
 	Curve& c = ExampleHandler::get(3);
 
 	CurveRenderer ren(c);
-	ren.genBuffer(N, 0, 1);
-	m_vb = ren.getBuffer();
+	ren.genBufferTesselation(N, 0, 1);
+	m_vbT = ren.getBuffer();
 
+	CurveRenderer ren2(c);
+	ren2.genBufferNormal(N, 0, 1);
+	m_vb = ren2.getBuffer();
 
 	m_program_curve.AttachShader(GL_VERTEX_SHADER, "shader_curve.vert");
-	m_program_curve.AttachShader(GL_TESS_CONTROL_SHADER, "beztcs.tcs");
-	m_program_curve.AttachShader(GL_TESS_EVALUATION_SHADER, "beztes.tes");
 	m_program_curve.AttachShader(GL_FRAGMENT_SHADER, "shader_curve.frag");
 
 	m_program_curve.BindAttribLoc(0, "vs_in_pos");
@@ -47,6 +48,23 @@ bool CMyApp::Init()
 	m_program_curve.BindAttribLoc(5, "vs_in_t");
 
 	if ( !m_program_curve.LinkProgram() )
+	{
+		return false;
+	}
+
+	m_program_tess.AttachShader(GL_VERTEX_SHADER, "shader_tess.vert");
+	m_program_tess.AttachShader(GL_TESS_CONTROL_SHADER, "beztcs.tcs");
+	m_program_tess.AttachShader(GL_TESS_EVALUATION_SHADER, "beztes.tes");
+	m_program_tess.AttachShader(GL_FRAGMENT_SHADER, "shader_tess.frag");
+
+	m_program_tess.BindAttribLoc(0, "vs_in_pos");
+	m_program_tess.BindAttribLoc(1, "vs_in_e");
+	m_program_tess.BindAttribLoc(2, "vs_in_n");
+	m_program_tess.BindAttribLoc(3, "vs_in_b");
+	m_program_tess.BindAttribLoc(4, "vs_in_k");
+	m_program_tess.BindAttribLoc(5, "vs_in_t");
+
+	if ( !m_program_tess.LinkProgram() )
 	{
 		return false;
 	}
@@ -86,26 +104,44 @@ void CMyApp::Update()
 void CMyApp::Render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	if (tesselated)
+	{
+		m_program_tess.On();
 
-	m_program_curve.On();
+		glm::mat4 matWorld = glm::mat4(1.0f);
+		glm::mat4 mvp = m_camera.GetViewProj() *matWorld;
+
+		m_program_tess.SetUniform( "MVP", mvp );
+
+		m_vbT.On();
+		m_vbT.SetPatchVertices(2);
+		m_vbT.Draw(GL_PATCHES, 0, 2*(N+1));
+
+		m_vbT.Off();
+
+		m_program_tess.Off();
+	}
+	else
+	{
+		m_program_curve.On();
+
+		glm::mat4 matWorld = glm::mat4(1.0f);
+		glm::mat4 mvp = m_camera.GetViewProj() *matWorld;
+
+		m_program_curve.SetUniform( "MVP", mvp );
+
+		m_vb.On();
+
+		m_vb.Draw(GL_LINE_STRIP, 0, N+1);
+
+		m_vb.Off();
+
+		m_program_curve.Off();
+	}
+	m_program_basic.On();
 
 	glm::mat4 matWorld = glm::mat4(1.0f);
 	glm::mat4 mvp = m_camera.GetViewProj() *matWorld;
-
-	m_program_curve.SetUniform( "MVP", mvp );
-
-	m_vb.On();
-	m_vb.SetPatchVertices(2);
-	m_vb.Draw(GL_PATCHES, 0, 2*(N+1));
-
-	m_vb.Off();
-
-	m_program_curve.Off();
-
-	m_program_basic.On();
-
-	matWorld = glm::mat4(1.0f);
-	mvp = m_camera.GetViewProj() *matWorld;
 
 	m_program_basic.SetUniform( "MVP", mvp );
 
