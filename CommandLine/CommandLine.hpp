@@ -188,6 +188,14 @@ bool CommandLine::runTest()
 	assert_dvec3_equal(e(bez, 0.5), glm::dvec3(-0.388514, 0.291386, 0.874157));
 	assert_dvec3_equal(n(bez, 0.5), glm::dvec3(-0.917284, -0.212334, -0.336903));
 	assert_double_equal(T(bez, 0.5), 0.0860946);
+	
+	Curve& be = ExampleHandler::get(4);
+	
+	assert_dvec3_equal(e(be,0), glm::dvec3(0.301511, 0.904534, 0.301511));
+	assert_dvec3_equal(n(be,0), glm::dvec3(-0.794552, 0.063564, 0.603860));
+	assert_dvec3_equal(b(be,0), glm::dvec3(0.527046, -0.421637, 0.737865));
+	assert_double_equal(K(be,0), 0.195026);
+	assert_double_equal(T(be,0), 0.0166667);
 
 	std::cout << "All tests ran in order." << std::endl;
 	return true;

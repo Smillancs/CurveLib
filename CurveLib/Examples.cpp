@@ -39,7 +39,16 @@ void ExampleHandler::generate()
 	cps.push_back(glm::vec3(0, 4, -2));
 	cps.push_back(glm::vec3(-2, -8, 4));
 	cps.push_back(glm::vec3(0, 10, 0));
-
+	
 	examples.push_back(new BezierCurve(cps));
+	
+	std::vector<glm::vec3> cps2;
+	cps2.push_back(glm::vec3(1,0,0));
+	cps2.push_back(glm::vec3(2,3,1));
+	cps2.push_back(glm::vec3(-1,1,2));
+	cps2.push_back(glm::vec3(0,-2,0));
+	cps2.push_back(glm::vec3(0,-2,0));
+
+	examples.push_back(new BezierCurve(cps2));
 	ready = true;
 }
