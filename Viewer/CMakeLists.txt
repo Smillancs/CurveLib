@@ -10,7 +10,10 @@ gVertexBuffer.h
 gVertexBuffer.cpp
 MyApp.h
 MyApp.cpp
+imgui_impl_sdl_gl3.h
+imgui_impl_sdl_gl3.cpp
 )
+
 
 set(tarver "x86")
 
@@ -18,6 +21,7 @@ set(tarver "x86")
 if(UNIX)
 	set(libdir "usr/lib/")
 	include_directories(/usr/include/SDL2)
+	include_directories(/usr/include/Imgui)
 	find_library(GLEW_LIB REQUIRED GLEW HINTS ${libdir})
 	find_library(GLU_LIB REQUIRED GLU HINTS ${libdir})
 	find_library(OGL_LIB REQUIRED GL HINTS ${libdir})
@@ -26,6 +30,7 @@ if(WIN32)
 	set(libdir "../OGLPack/lib/${tarver}")
 	include_directories(../eigen)
 	include_directories(../OGLPack/include)
+	include_directories(../imgui)
 	find_library(GLEW_LIB NAME glew32s HINTS ${libdir})
 	find_library(GLU_LIB NAME GlU32 HINTS ${libdir})
 	find_library(OGL_LIB NAME OPENGL32 HINTS ${libdir})
@@ -42,3 +47,4 @@ target_link_libraries(Viewer PUBLIC ${SDL2main_LIB})
 target_link_libraries(Viewer PUBLIC ${SDL2_LIB})
 target_link_libraries(Viewer PUBLIC ${SDL2_image_LIB})
 target_link_libraries(Viewer PUBLIC CurveLib)
+target_link_libraries(Viewer PUBLIC Imgui)

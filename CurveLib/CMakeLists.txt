@@ -9,8 +9,6 @@ bezierSquareSurface.cpp
 bezierSquareSurface_gpu.cpp
 GLUtils.h
 GLUtils.cpp
-vertex.vert
-fragment.frag
 Curve.hpp
 SimpleCurves.hpp
 GeomInvariant.hpp

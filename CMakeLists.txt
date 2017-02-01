@@ -8,5 +8,6 @@ project(Curve_Lib)
 
 
 add_subdirectory(CurveLib)
+add_subdirectory(Imgui)
 add_subdirectory(Viewer)
 add_subdirectory(CommandLine)
