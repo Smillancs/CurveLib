@@ -141,6 +141,22 @@ bool CommandLine::curveProcess(std::stringstream& cmd)
 		sscanf(s, "%lf", &t);
 		std::cout << GeomInv::K(ExampleHandler::get(activeCurve), t) << std::endl;
 	}
+	else if(cmd1 == "dK")
+	{
+		cmd >> cmd1;
+		const char* s = cmd1.c_str();
+		double t;
+		sscanf(s, "%lf", &t);
+		std::cout << GeomInv::dK(ExampleHandler::get(activeCurve), t) << std::endl;
+	}
+	else if(cmd1 == "ddK")
+	{
+		cmd >> cmd1;
+		const char* s = cmd1.c_str();
+		double t;
+		sscanf(s, "%lf", &t);
+		std::cout << GeomInv::ddK(ExampleHandler::get(activeCurve), t) << std::endl;
+	}
 	else if(cmd1 == "T")
 	{
 		cmd >> cmd1;
@@ -149,9 +165,17 @@ bool CommandLine::curveProcess(std::stringstream& cmd)
 		sscanf(s, "%lf", &t);
 		std::cout << GeomInv::T(ExampleHandler::get(activeCurve), t) << std::endl;
 	}
+	else if(cmd1 == "dT")
+	{
+		cmd >> cmd1;
+		const char* s = cmd1.c_str();
+		double t;
+		sscanf(s, "%lf", &t);
+		std::cout << GeomInv::dT(ExampleHandler::get(activeCurve), t) << std::endl;
+	}
 	else if(cmd1 == "help")
 	{
-		std::cout << "Operations on curves:\n\tset - set active curve (from examples)\n\tinfo - print information about active curve\n\tf - evaluate curve in given parameter\n\td, dd, ddd - evaluate derivative of active curve\n\te, n, b - evaluate Frenet-frame of active curve\n\tK, T - evaluate curvature and torsion of active curve" << std::endl;
+		std::cout << "Operations on curves:\n\tset - set active curve (from examples)\n\tinfo - print information about active curve\n\tf - evaluate curve in given parameter\n\td, dd, ddd - evaluate derivative of active curve\n\te, n, b - evaluate Frenet-frame of active curve\n\tK, dK, ddK - evaluate curvature and its derivatives\n\tT, dT - evaluate torsion and its derivatives" << std::endl;
 	}
 	else
 		throw Exception("This command does not exist for curves");
