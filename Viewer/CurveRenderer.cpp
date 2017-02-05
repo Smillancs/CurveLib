@@ -2,7 +2,7 @@
 
 #include "../CurveLib/GeomInvariant.hpp"
 
-void CurveRenderer::genBufferTesselation(unsigned N, float a, float b)
+void CurveRenderer::genBufferTesselation(const unsigned N, const float a, const float b)
 {
 	//vb.Clean(); // leads to unintended consequences
     this->a = a;
@@ -51,7 +51,7 @@ void CurveRenderer::genBufferTesselation(unsigned N, float a, float b)
 
 }
 
-void CurveRenderer::genBufferNormal(unsigned N, float a, float b)
+void CurveRenderer::genBufferNormal(const unsigned N, const float a, const float b)
 {
 	//vb.Clean(); // leads to unintended consequences
     this->a = a;
