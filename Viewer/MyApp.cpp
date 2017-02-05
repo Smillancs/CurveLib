@@ -37,13 +37,7 @@ bool CMyApp::Init()
 
 	m_program_curve.AttachShader(GL_VERTEX_SHADER, "shader_curve.vert");
 	m_program_curve.AttachShader(GL_FRAGMENT_SHADER, "shader_curve.frag");
-
-	m_program_curve.BindAttribLoc(0, "vs_in_pos");
-	m_program_curve.BindAttribLoc(1, "vs_in_e");
-	m_program_curve.BindAttribLoc(2, "vs_in_n");
-	m_program_curve.BindAttribLoc(3, "vs_in_b");
-	m_program_curve.BindAttribLoc(4, "vs_in_k");
-	m_program_curve.BindAttribLoc(5, "vs_in_t");
+	addCommonShaderAttrib(m_program_curve);
 
 	if ( !m_program_curve.LinkProgram() )
 	{
@@ -54,13 +48,13 @@ bool CMyApp::Init()
 	m_program_tess.AttachShader(GL_TESS_CONTROL_SHADER, "beztcs.tcs");
 	m_program_tess.AttachShader(GL_TESS_EVALUATION_SHADER, "beztes.tes");
 	m_program_tess.AttachShader(GL_FRAGMENT_SHADER, "shader_tess.frag");
+	addCommonShaderAttrib(m_program_tess);
+	
+	if ( !m_program_tess.LinkProgram() )
+	{
+		return false;
+	}
 
-	m_program_tess.BindAttribLoc(0, "vs_in_pos");
-	m_program_tess.BindAttribLoc(1, "vs_in_e");
-	m_program_tess.BindAttribLoc(2, "vs_in_n");
-	m_program_tess.BindAttribLoc(3, "vs_in_b");
-	m_program_tess.BindAttribLoc(4, "vs_in_k");
-	m_program_tess.BindAttribLoc(5, "vs_in_t");
 	BezierCurve * bez = (BezierCurve *)&ExampleHandler::get(3);
 	CurveRenderer ren3(*bez);
 	auto cp = bez->GetGlmControlPoints();
@@ -94,6 +88,18 @@ bool CMyApp::Init()
 
 	return true;
 }
+
+
+void CMyApp::addCommonShaderAttrib(gShaderProgram& program)
+{
+	program.BindAttribLoc(0, "vs_in_pos");
+	program.BindAttribLoc(1, "vs_in_e");
+	program.BindAttribLoc(2, "vs_in_n");
+	program.BindAttribLoc(3, "vs_in_b");
+	program.BindAttribLoc(4, "vs_in_k");
+	program.BindAttribLoc(5, "vs_in_t");
+}
+
 
 void CMyApp::Clean()
 {

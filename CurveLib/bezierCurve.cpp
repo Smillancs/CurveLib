@@ -151,8 +151,8 @@ SubCurves BezierCurve::Subdivision(const double t)
 
 	for (size_t i = 0; i < n; ++i)
 	{
-		dividedCmp.first.cp[i] = Eigen::Vector3f(0, 0);
-		dividedCmp.second.cp[i] = Eigen::Vector3f(0, 0);
+		dividedCmp.first.cp[i] = Eigen::Vector3f(0, 0, 0);
+		dividedCmp.second.cp[i] = Eigen::Vector3f(0, 0, 0);
 		for (size_t j = 0; j <= i; ++j)
 		{
 			dividedCmp.first.cp[i] += cp[j]*Bernstein(i, j, t);

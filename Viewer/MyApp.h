@@ -44,6 +44,7 @@ public:
 	void Run();
 
 	void initGraphics();
+	void addCommonShaderAttrib(gShaderProgram&);
 
 	const static int N = 50;
 	int vertsInPatch = 2;
