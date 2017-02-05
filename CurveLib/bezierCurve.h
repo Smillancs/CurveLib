@@ -48,6 +48,16 @@ public:
 	void addControlPoint(const Eigen::Vector3f _cp);
 
 	std::vector<Eigen::Vector3f> GetControlPoints() const { return cp; }
+	std::vector<glm::vec3> GetGlmControlPoints() const 
+	{
+		std::vector<glm::vec3> tempcp = {}; 
+		for(auto &i : cp)
+		{
+			tempcp.push_back(glm::vec3(i.x(),i.y(),i.z()));
+		}
+		return tempcp; 
+	}
+	std::vector<double> GetBernsteinCoeffs() const { return coeff; }
 	
 
 	virtual glm::dvec3 dnf(double t, unsigned n) override 

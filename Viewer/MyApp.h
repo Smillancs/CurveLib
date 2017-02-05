@@ -17,6 +17,10 @@
 #include "gShaderProgram.h"
 #include "gVertexBuffer.h"
 
+#include "../CurveLib/Examples.hpp"
+#include "../CurveLib/bezierCurve.h"
+#include "CurveRenderer.h"
+
 class CMyApp
 {
 public:
@@ -42,18 +46,21 @@ public:
 	void initGraphics();
 
 	const static int N = 50;
+	int vertsInPatch = 2;
 protected:
 	SDL_Window* win;
 	SDL_GLContext context;
-
+	
 	gCamera			m_camera;
 	gShaderProgram	m_program_curve;
 	gShaderProgram	m_program_tess;
+	gShaderProgram	m_program_bez;
 	gShaderProgram	m_program_basic;
 	gVertexBuffer	m_vb;
-	gVertexBuffer	m_vbT;
+	gVertexBuffer	m_vbT, m_vbBez;
 	gVertexBuffer   axes;
 	
 	bool tesselated = true;
+	bool drawBezier = true;
 };
 

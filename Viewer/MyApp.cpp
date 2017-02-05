@@ -1,8 +1,6 @@
 #include "MyApp.h"
 #include "GLUtils.hpp"
 
-#include "../CurveLib/Examples.hpp"
-#include "CurveRenderer.h"
 
 //#include <GL/GLU.h>
 //#include <math.h>
@@ -63,8 +61,20 @@ bool CMyApp::Init()
 	m_program_tess.BindAttribLoc(3, "vs_in_b");
 	m_program_tess.BindAttribLoc(4, "vs_in_k");
 	m_program_tess.BindAttribLoc(5, "vs_in_t");
+	BezierCurve * bez = (BezierCurve *)&ExampleHandler::get(3);
+	CurveRenderer ren3(*bez);
+	auto cp = bez->GetGlmControlPoints();
+	ren3.genBufferCps(cp);
+	m_vbBez = ren3.getBuffer();
+	vertsInPatch = cp.size();
 
-	if ( !m_program_tess.LinkProgram() )
+	m_program_bez.AttachShader(GL_VERTEX_SHADER, "shader_tess_adv.vert");
+	m_program_bez.AttachShader(GL_TESS_CONTROL_SHADER, "shader_tess_adv.tcs");
+	m_program_bez.AttachShader(GL_TESS_EVALUATION_SHADER, "shader_tess_adv.tes");
+	m_program_bez.AttachShader(GL_FRAGMENT_SHADER, "shader_tess_adv.frag");
+	addCommonShaderAttrib(m_program_bez);
+
+	if ( !m_program_bez.LinkProgram())
 	{
 		return false;
 	}
@@ -104,45 +114,45 @@ void CMyApp::Update()
 void CMyApp::Render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glm::mat4 matWorld = glm::mat4(1.0f);
+	glm::mat4 mvp = m_camera.GetViewProj() *matWorld;
+
 	if (tesselated)
 	{
-		m_program_tess.On();
-
-		glm::mat4 matWorld = glm::mat4(1.0f);
-		glm::mat4 mvp = m_camera.GetViewProj() *matWorld;
-
-		m_program_tess.SetUniform( "MVP", mvp );
-
-		m_vbT.On();
-		m_vbT.SetPatchVertices(2);
-		m_vbT.Draw(GL_PATCHES, 0, 2*(N+1));
-
-		m_vbT.Off();
-
-		m_program_tess.Off();
+		auto & currentProgram = drawBezier ? m_program_bez : m_program_tess;
+		currentProgram.On();
+		currentProgram.SetUniform("MVP", mvp);
+		if (drawBezier)
+		{
+			currentProgram.SetUniform( "pointNum", vertsInPatch);
+			m_vbBez.On();
+			m_vbBez.SetPatchVertices(vertsInPatch);
+			m_vbBez.Draw(GL_PATCHES, 0, vertsInPatch);
+			m_vbBez.Off();
+		}
+		else
+		{
+			m_vbT.On();
+			m_vbT.SetPatchVertices(2);
+			m_vbT.Draw(GL_PATCHES, 0, 2*(N+1));
+			m_vbT.Off();
+		}
+		currentProgram.Off();
 	}
 	else
 	{
 		m_program_curve.On();
-
-		glm::mat4 matWorld = glm::mat4(1.0f);
-		glm::mat4 mvp = m_camera.GetViewProj() *matWorld;
-
+		
 		m_program_curve.SetUniform( "MVP", mvp );
 
 		m_vb.On();
-
 		m_vb.Draw(GL_LINE_STRIP, 0, N+1);
-
 		m_vb.Off();
 
 		m_program_curve.Off();
 	}
 	m_program_basic.On();
-
-	glm::mat4 matWorld = glm::mat4(1.0f);
-	glm::mat4 mvp = m_camera.GetViewProj() *matWorld;
-
+	
 	m_program_basic.SetUniform( "MVP", mvp );
 
 	axes.On();
