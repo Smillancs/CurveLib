@@ -1,0 +1,60 @@
+#version 420
+
+layout (isolines,equal_spacing) in;
+
+in block
+{
+	vec3	pos;
+} In[];
+
+out block
+{
+	vec3	pos;
+	vec3	col;
+	vec3	patch_coords;
+} Out;
+
+uniform mat4 MVP;
+uniform mat4 world;
+uniform mat4 worldIT;
+uniform int pointNum = 1;
+
+int factorial(int n)
+{
+	int temp = 1;
+	for (int i = 1; i <= n; ++i)
+	{
+		temp*=i;
+	}
+	return temp;
+}
+
+float binomial(int n, int k)
+{
+	return factorial(n)/(factorial(k)*factorial(n-k));
+}
+
+float Bernstein(int n, int i, float t)
+{
+	return binomial(n,i)*pow(t,i)*pow(1.0-t,n-i);
+}
+
+vec3 BernsteinEval(float t)
+{
+	vec3 temp = vec3(0,0,0);
+	for(int i = 0; i < pointNum; ++i)
+	{
+		temp += Bernstein(pointNum-1,i,t)*In[i].pos;
+	}
+	return temp;
+}
+
+void main()
+{
+	float u = gl_TessCoord.x;
+	vec3 bpos = BernsteinEval(u);
+	gl_Position = MVP*vec4(bpos,1);
+	Out.pos = (world*vec4(bpos,1)).xyz;
+	Out.patch_coords = gl_TessCoord.xyz;
+	Out.col = vec3(0,0,0);
+}
