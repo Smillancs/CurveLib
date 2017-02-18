@@ -2,6 +2,9 @@
 #define ALL_INCL_H
 #include <vector>
 
+#include <stdint.h>
+#include <cstddef>
+
 //just temporary
 
 int64_t factorial(const int64_t n);
