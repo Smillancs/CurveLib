@@ -87,7 +87,7 @@ namespace GeomInv{
 	}
 
 	glm::dvec3 e(Curve& c, double t)
-	{ 
+	{
 		auto normed = (c.dnf(t,1)!=glm::dvec3(0,0,0))?
 			glm::normalize(c.dnf(t,1)):
 			glm::dvec3(0,0,0);
@@ -117,20 +117,20 @@ namespace GeomInv{
 	double dK(Curve& c, double t)
 	{
 		double x1 = frenet_coordinate<1,1>(c, t);
-		double x2 = frenet_coordinate<1,2>(c, t);
+		double x2 = frenet_coordinate<2,1>(c, t);
 		double y2 = frenet_coordinate<2,2>(c, t);
-		double y3 = frenet_coordinate<2,3>(c, t);
+		double y3 = frenet_coordinate<3,2>(c, t);
 		return (y3 * x1 - 3 * x2 * y2) / (x1 * x1 * x1 * x1);
 	}
 	
 	double ddK(Curve& c, double t)
 	{
 		double x1 = frenet_coordinate<1,1>(c, t);
-		double x2 = frenet_coordinate<1,2>(c, t);
-		double x3 = frenet_coordinate<1,3>(c, t);
+		double x2 = frenet_coordinate<2,1>(c, t);
+		double x3 = frenet_coordinate<3,1>(c, t);
 		double y2 = frenet_coordinate<2,2>(c, t);
-		double y3 = frenet_coordinate<2,3>(c, t);
-		double y4 = frenet_coordinate<2,4>(c, t);
+		double y3 = frenet_coordinate<3,2>(c, t);
+		double y4 = frenet_coordinate<4,2>(c, t);
 		return (y4 * x1 * x1 - 5 * x2 * y3 * x1 + 12 * x2 * x2 * y2 - 4 * y2 * x3 * x1 - 3 * y2 * y2 * y2) / (x1 * x1 * x1 * x1 * x1 * x1);
 	}
 	
@@ -146,9 +146,9 @@ namespace GeomInv{
 	{
 		double x1 = frenet_coordinate<1,1>(c, t);
 		double y2 = frenet_coordinate<2,2>(c, t);
-		double y3 = frenet_coordinate<2,3>(c, t);
+		double y3 = frenet_coordinate<3,2>(c, t);
 		double z3 = frenet_coordinate<3,3>(c, t);
-		double z4 = frenet_coordinate<3,4>(c, t);
+		double z4 = frenet_coordinate<4,3>(c, t);
 		return (y2 == 0) ? 0.0 : (z4 * y2 - 2 * z3 * y3) / (x1 * x1 * y2 * y2);
 	}
 	
