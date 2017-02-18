@@ -16,7 +16,7 @@ out block
 	float	t;
 } Out;
 
-uniform mat4 MVP;
+uniform mat4 VP;
 uniform mat4 world;
 uniform mat4 worldIT;
 uniform int pointNum = 1;
@@ -164,7 +164,7 @@ void main()
 {
 	float u = gl_TessCoord.x;
 	vec3 bpos = BernsteinEval(u);
-	gl_Position = MVP*vec4(bpos,1);
+	gl_Position = VP*vec4(bpos,1);
 	Out.pos = (world*vec4(bpos,1)).xyz;
 	Out.patch_coords = gl_TessCoord.xyz;
 	Out.k = K(u);

@@ -120,14 +120,13 @@ void CMyApp::Update()
 void CMyApp::Render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glm::mat4 matWorld = glm::mat4(1.0f);
-	glm::mat4 mvp = m_camera.GetViewProj() *matWorld;
+	glm::mat4 vp = m_camera.GetViewProj();
 
 	if (tesselated)
 	{
 		auto & currentProgram = drawBezier ? m_program_bez : m_program_tess;
 		currentProgram.On();
-		currentProgram.SetUniform("MVP", mvp);
+		currentProgram.SetUniform("VP", vp);
 		if (drawBezier)
 		{
 			currentProgram.SetUniform( "pointNum", vertsInPatch);
@@ -149,7 +148,7 @@ void CMyApp::Render()
 	{
 		m_program_curve.On();
 		
-		m_program_curve.SetUniform( "MVP", mvp );
+		m_program_curve.SetUniform( "VP", vp );
 
 		m_vb.On();
 		m_vb.Draw(GL_LINE_STRIP, 0, N+1);
@@ -159,7 +158,7 @@ void CMyApp::Render()
 	}
 	m_program_basic.On();
 	
-	m_program_basic.SetUniform( "MVP", mvp );
+	m_program_basic.SetUniform( "VP", vp );
 
 	axes.On();
 	axes.Draw(GL_LINES, 0, 6);

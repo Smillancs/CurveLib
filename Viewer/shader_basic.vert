@@ -10,11 +10,11 @@ out vec3 vs_out_col;
 
 
 // shader külsõ paraméterei - most a három transzformációs mátrixot külön-külön vesszük át
-uniform mat4 MVP;
+uniform mat4 VP;
 
 void main()
 {
-	gl_Position = MVP * vec4( vs_in_pos, 1 );
+	gl_Position = VP * vec4( vs_in_pos, 1 );
 
 	vs_out_pos = vs_in_pos;
 	vs_out_col = vs_in_col;
