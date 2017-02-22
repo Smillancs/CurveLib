@@ -211,13 +211,13 @@ BezierCurve BezierCurve::Reduction()
 }
 
 
-BezierCurve BezierCurve::ToParametric(const double t)
+BezierCurve BezierCurve::ToParametric()
 {
 	return *this;
 }
 
 
-BezierCurve::Parametric BezierCurve::ToExplicit()
+BezierCurve::Parametric BezierCurve::ToExplicit(const double t)
 {
 	CheckCoeff();
 	BezierCurve::Parametric eval;

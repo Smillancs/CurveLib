@@ -40,8 +40,8 @@ public:
 	BezierCurve Elevation();
 	BezierCurve Reduction();
 
-	Parametric ToExplicit();
-	BezierCurve ToParametric(const double t);
+	Parametric ToExplicit(const double t);
+	BezierCurve ToParametric();
 
 	void addControlPoint(const Eigen::Vector3f _cp);
 
