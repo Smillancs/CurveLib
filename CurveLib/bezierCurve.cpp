@@ -211,25 +211,25 @@ BezierCurve BezierCurve::Reduction()
 }
 
 
-BezierCurve::Parametric BezierCurve::ToParametric(const double t)
+BezierCurve BezierCurve::ToParametric(const double t)
+{
+	return *this;
+}
+
+
+BezierCurve::Parametric BezierCurve::ToExplicit()
 {
 	CheckCoeff();
 	BezierCurve::Parametric eval;
 	size_t n = cp.size();
 	for (size_t i = 0; i < n; ++i)
 	{
-		double b = Bernstein(n,i,t);
+		double b = Bernstein(n, i, t);
 		eval.first+=i*b;
 		eval.second+=cp[i]*b;
 	}
 	eval.first/=static_cast<double>(n);
 	return eval;
-}
-
-
-BezierCurve BezierCurve::ToExplicit()
-{
-	return *this;
 }
 
 std::string BezierCurve::about()
