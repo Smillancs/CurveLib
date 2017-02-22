@@ -27,7 +27,7 @@ public:
 
 	BezierCurve operator=(const BezierCurve & _other);
 
-	typedef std::pair<double, Eigen::Vector3f> Parametric;
+	typedef std::pair<double, Eigen::Vector3f> Explicit;
 
 	std::vector<Eigen::Vector3f> deCasteljauEval(const float t, const size_t deg);
 	Eigen::Vector3f BernsteinEval(const float t);
@@ -40,7 +40,7 @@ public:
 	BezierCurve Elevation();
 	BezierCurve Reduction();
 
-	Parametric ToExplicit(const double t);
+	Explicit ToExplicit(const double t);
 	BezierCurve ToParametric();
 
 	void addControlPoint(const Eigen::Vector3f _cp);

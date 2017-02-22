@@ -226,10 +226,10 @@ BezierCurve BezierCurve::ToParametric()
 }
 
 //Farin 71. 5.5 Nonparametric curves
-BezierCurve::Parametric BezierCurve::ToExplicit(const double t)
+BezierCurve::Explicit BezierCurve::ToExplicit(const double t)
 {
 	CheckCoeff();
-	BezierCurve::Parametric eval;
+	BezierCurve::Explicit eval;
 	double n = cp.size();
 	for (size_t i = 0; i < n; ++i)
 	{
