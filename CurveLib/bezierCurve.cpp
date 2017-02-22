@@ -221,11 +221,11 @@ BezierCurve::Parametric BezierCurve::ToExplicit(const double t)
 {
 	CheckCoeff();
 	BezierCurve::Parametric eval;
-	size_t n = cp.size();
+	double n = cp.size();
 	for (size_t i = 0; i < n; ++i)
 	{
 		double b = Bernstein(n, i, t);
-		eval.first+=i*b;
+		eval.first+=i/n*b;
 		eval.second+=cp[i]*b;
 	}
 	eval.first/=static_cast<double>(n);
