@@ -55,6 +55,7 @@ void BezierCurve::addControlPoint(const Eigen::Vector3f _cp)
 	dirtyCoeff = true;
 }
 
+//Farin 52. 4.5 Derivates and the de Casteljau algorithm
 std::vector<Eigen::Vector3f> BezierCurve::deCasteljauEval(const float t, const size_t deg)
 {
 	std::vector<Eigen::Vector3f> tempCp = cp;
@@ -71,17 +72,20 @@ std::vector<Eigen::Vector3f> BezierCurve::deCasteljauEval(const float t, const s
 	return tempCp;
 }
 
+//Farin 44-45. 4.1 Bernstein Polynomials
 double BezierCurve::Bernstein(const size_t n, const size_t i, const double t) const
 {
 	return binomial(n,i)*pow(t,i)*pow(1.0-t,n-i);
 }
 
+//Farin 44-45. 4.1 Bernstein Polynomials
 double BezierCurve::Bernstein(const size_t i, const double t) const
 {
 	auto n = cp.size()-1;
 	return coeff[i]*pow(t, i)*pow(1.0-t, n-i);
 }
 
+//Farin 44-45. 4.1 Bernstein Polynomials
 Eigen::Vector3f BezierCurve::BernsteinEval(const float t)
 {
 	CheckCoeff();
@@ -94,6 +98,7 @@ Eigen::Vector3f BezierCurve::BernsteinEval(const float t)
 	return mainCoeff*temp;
 }
 
+//Farin 50. (4.4 Higher order derivates)
 std::vector<Eigen::Vector3f> BezierCurve::Hodo(const size_t order)
 {
 	size_t n = cp.size()-order;
@@ -113,6 +118,7 @@ std::vector<Eigen::Vector3f> BezierCurve::Hodo(const size_t order)
 	return coeff;
 }
 
+//Farin 49->51. 4.4 Higher order derivates
 Eigen::Vector3f BezierCurve::ForwardDiff(const size_t order, const size_t idx)
 {
 	Eigen::Vector3f delta = {0,0,0};
@@ -125,7 +131,7 @@ Eigen::Vector3f BezierCurve::ForwardDiff(const size_t order, const size_t idx)
 	return delta;
 }
 
-
+//Farin 49->51. 4.4 Higher order derivates
 Eigen::Vector3f BezierCurve::Diff(const size_t order, const float t)
 {
 	CheckCoeff();
@@ -140,6 +146,7 @@ Eigen::Vector3f BezierCurve::Diff(const size_t order, const float t)
 	return eval;
 }
 
+//Farin 53 4.6 Subdivision
 SubCurves BezierCurve::Subdivision(const double t)
 {
 	CheckCoeff();
@@ -166,6 +173,7 @@ SubCurves BezierCurve::Subdivision(const double t)
 	return dividedCmp;
 }
 
+//Farin 64. 5.1 Degree elevation
 BezierCurve BezierCurve::Elevation()
 {
 	BezierCurve bez;
@@ -180,6 +188,7 @@ BezierCurve BezierCurve::Elevation()
 	return bez;
 }
 
+//Farin 67->70. 5.4 Degree reduction
 BezierCurve BezierCurve::Reduction()
 {
 	CheckCoeff();
@@ -216,7 +225,7 @@ BezierCurve BezierCurve::ToParametric()
 	return *this;
 }
 
-
+//Farin 71. 5.5 Nonparametric curves
 BezierCurve::Parametric BezierCurve::ToExplicit(const double t)
 {
 	CheckCoeff();
