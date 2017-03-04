@@ -113,9 +113,19 @@ GLuint gShaderProgram::loadShader(GLenum _shaderType, const char* _fileName)
 	}
 
 	// file tartalmanak betoltese a shaderCode string-be
+	// preprocesszalas: #incl sajat makro fajl bemasolasat teszi lehetove (egy melysegig)
 	std::string line = "";
 	while ( std::getline(shaderStream, line) )
 	{
+		if( line.substr(0,6) == "#incl " )
+		{
+			std::string incl_file = line.substr(6);
+			std::ifstream includedStream (incl_file.c_str());
+			while ( std::getline(includedStream, line) )
+			{
+				shaderCode += line + "\n";
+			}
+		}
 		shaderCode += line + "\n";
 	}
 
