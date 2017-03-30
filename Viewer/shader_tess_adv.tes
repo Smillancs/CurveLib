@@ -19,9 +19,9 @@ out block
 uniform mat4 VP;
 uniform int pointNum = 1;
 
-#incl BezierEval.glsl
+#incl ../GPUcompute/BezierEval.glsl
 
-#incl GeomInvariant.glsl
+#incl ../GPUcompute/GeomInvariant.glsl
 
 void main()
 {

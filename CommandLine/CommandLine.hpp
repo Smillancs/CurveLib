@@ -6,9 +6,17 @@
 #include "../CurveLib/SimpleCurves.hpp"
 #include "../CurveLib/bezierCurve.h"
 
+#include "../GPUcompute/GeomOptimize.hpp"
+
+#include <SDL.h>
+#include <SDL_opengl.h>
+#include <GL/glew.h>
+
 #include <iostream>
 #include <vector>
 #include <sstream>
+
+#include <glm/gtc/matrix_access.hpp>
 
 class CommandLine
 {
@@ -17,19 +25,24 @@ public:
 
 private:
 	bool process(const std::string& cmd);
-	
+
 	bool curveProcess(std::stringstream& cmd);
-	
+
 	bool runTest();
-	
+
 	bool printHelp();
-	
+
+	void initOGL();
+
+	bool OGLinited = false;
+
 	size_t activeCurve = 0;
 };
 
 void CommandLine::run()
 {
 	bool ok = true;
+	initOGL();
 	while(ok)
 	{
 		std::string cmd;
@@ -72,7 +85,7 @@ bool CommandLine::curveProcess(std::stringstream& cmd)
 		if(index < ExampleHandler::size())
 			activeCurve = index;
 		std::cout << "Curve #" << activeCurve << ": " << ExampleHandler::get(activeCurve).about() << std::endl;
-	}	
+	}
 	else if(cmd1 == "info")
 	{
 		std::cout << "Curve #" << activeCurve << ": " << ExampleHandler::get(activeCurve).about() << std::endl;
@@ -188,14 +201,14 @@ bool CommandLine::runTest()
 	using namespace GeomInv;
 	Line l(glm::dvec3(0,0,0), glm::dvec3(1,1,0));
 	assert_dvec3_equal(e(l,0), glm::dvec3(sqrt(0.5),sqrt(0.5),0));
-	
+
 	Circle c(glm::dvec3(1,2,3), 3.0);
 	assert_dvec3_equal(e(c,0.5), glm::dvec3(0,-1,0));
 	assert_dvec3_equal(n(c,0.5), glm::dvec3(1,0,0));
 	assert_dvec3_equal(b(c,0.324), glm::dvec3(0,0,1));
 	assert_double_equal(K(c,0.6), 0.333333);
 	assert_double_equal(T(c,0.4), 0.0);
-	
+
 	//TODO: write tests for other bezier functions too
 	std::vector<glm::vec3> cps;
 	cps.push_back(glm::vec3(0, 2, 0));
@@ -212,14 +225,27 @@ bool CommandLine::runTest()
 	assert_dvec3_equal(e(bez, 0.5), glm::dvec3(-0.388514, 0.291386, 0.874157));
 	assert_dvec3_equal(n(bez, 0.5), glm::dvec3(-0.917284, -0.212334, -0.336903));
 	assert_double_equal(T(bez, 0.5), 0.0860946);
-	
+
 	Curve& be = ExampleHandler::get(4);
-	
+
 	assert_dvec3_equal(e(be,0), glm::dvec3(0.301511, 0.904534, 0.301511));
 	assert_dvec3_equal(n(be,0), glm::dvec3(-0.794552, 0.063564, 0.603860));
 	assert_dvec3_equal(b(be,0), glm::dvec3(0.527046, -0.421637, 0.737865));
 	assert_double_equal(K(be,0), 0.195026);
 	assert_double_equal(T(be,0), 0.0166667);
+
+	std::vector<GeomOptimize::Input2D3> vec = {{{0,0},{1,0},1,-1}};
+	GeomOptimize opt;
+	std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
+	std::vector<GeomOptimize::Result> res = opt.optimize2D3(vec, dump);
+	BezierCurve optCurve = opt.createResultCurve(vec[0], res[0]);
+
+	std::cout << res.size() << std::endl << res[0].t0 << std::endl << res[0].t1 <<  std::endl << res[0].norm << std::endl;
+	std::cout << (*dump)[0] << std::endl;
+	/*std::cout << std::endl;
+	std::cout << res[0].d[0] << std::endl << res[0].d[1] << std::endl << res[0].dd[0] << std::endl << res[0].dd[1] << std::endl << res[0].dd[2] << std::endl << res[0].dd[3] << std::endl;
+	std::cout << std::endl;
+	std::cout << res[0].integrals[0] << std::endl << res[0].integrals[1] << std::endl << res[0].integrals[2] << std::endl << res[0].integrals[3] << std::endl << res[0].integrals[4] << std::endl << res[0].integrals[5] << std::endl << res[0].integrals[6] << std::endl << res[0].integrals[7] << std::endl << res[0].integrals[8] << std::endl;*/
 
 	std::cout << "All tests ran in order." << std::endl;
 	return true;
@@ -230,4 +256,72 @@ bool CommandLine::printHelp()
 {
 	std::cout << "Available commands: \n\tcurve - perform operations on curves (`curve help` for info)\n\ttest - run unit tests\n\tquit - quit program\n";
 	return true;
+}
+
+void CommandLine::initOGL()
+{
+	if(OGLinited) return;
+
+	if (SDL_Init(SDL_INIT_VIDEO) == -1)
+	{
+		std::cout << "[SDL indítása]Hiba az SDL inicializálása közben: " << SDL_GetError() << std::endl;
+		exit(1);
+	}
+
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+	SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+	SDL_Window* win = SDL_CreateWindow("Hello SDL&OpenGL!",	100, 100, 640, 480,	SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE);
+
+	if (win == 0)
+	{
+		std::cout << "[Ablak létrehozása]Hiba az SDL inicializálása közben: " << SDL_GetError() << std::endl;
+		exit(1);
+	}
+
+	SDL_GLContext context = SDL_GL_CreateContext(win);
+	if (context == 0)
+	{
+		std::cout << "[OGL context létrehozása]Hiba az SDL inicializálása közben: " << SDL_GetError() << std::endl;
+		exit(1);
+	}
+
+	SDL_GL_SetSwapInterval(1);
+
+	GLenum error = glewInit();
+	if (error != GLEW_OK)
+	{
+		std::cout << "[GLEW] Hiba az inicializálás során!" << std::endl;
+		exit(1);
+	}
+
+	int glVersion[2] = { -1, -1 };
+	glGetIntegerv(GL_MAJOR_VERSION, &glVersion[0]);
+	glGetIntegerv(GL_MINOR_VERSION, &glVersion[1]);
+	std::cout << "Running OpenGL " << glVersion[0] << "." << glVersion[1] << std::endl;
+
+	if (glVersion[0] == -1 && glVersion[1] == -1)
+	{
+		SDL_GL_DeleteContext(context);
+		SDL_DestroyWindow(win);
+
+		std::cout << "[OGL context létrehozása] Nem sikerült létrehozni az OpenGL context-et! Lehet, hogy az SDL_GL_SetAttribute(...) hívásoknál az egyik beállítás helytelen." << std::endl;
+
+		exit(1);
+	}
+
+	std::stringstream window_title;
+	window_title << "OpenGL " << glVersion[0] << "." << glVersion[1];
+	SDL_SetWindowTitle(win, window_title.str().c_str());
+
+	OGLinited = true;
 }

@@ -14,7 +14,7 @@
 #include <glm/gtc/constants.hpp>
 
 #include "gCamera.h"
-#include "gShaderProgram.h"
+#include "../GPUcompute/gShaderProgram.h"
 #include "gVertexBuffer.h"
 
 #include "../CurveLib/Examples.hpp"
@@ -61,7 +61,7 @@ protected:
 	gVertexBuffer	m_vbT, m_vbBez;
 	gVertexBuffer   axes;
 	
-	bool tesselated = true;
+	bool tesselated = false;
 	bool drawBezier = true;
 };
 

@@ -1,9 +1,8 @@
 #include "MyApp.h"
 #include "GLUtils.hpp"
 
+#include "../GPUcompute/GeomOptimize.hpp"
 
-//#include <GL/GLU.h>
-//#include <math.h>
 #include <sstream>
 
 CMyApp::CMyApp()
@@ -24,8 +23,14 @@ bool CMyApp::Init()
 	glEnable(GL_DEPTH_TEST);
 
     axes = coordAxes();
+	
+	std::vector<GeomOptimize::Input2D3> vec = {{{0,0},{1,0},1,-1}};
+	GeomOptimize opt;
+	std::vector<GeomOptimize::Result> res = opt.optimize2D3(vec);
+	BezierCurve optCurve = opt.createResultCurve(vec[0], res[0]);
 
-	Curve& c = ExampleHandler::get(3);
+	Curve& c = optCurve;
+	//Curve& c = ExampleHandler::get(3);
 
 	CurveRenderer ren(c);
 	ren.genBufferTesselation(N, 0, 1);

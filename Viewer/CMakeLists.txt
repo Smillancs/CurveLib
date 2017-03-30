@@ -4,8 +4,6 @@ CurveRenderer.h
 CurveRenderer.cpp
 gCamera.h
 gCamera.cpp
-gShaderProgram.h
-gShaderProgram.cpp
 gVertexBuffer.h
 gVertexBuffer.cpp
 MyApp.h
@@ -47,4 +45,5 @@ target_link_libraries(Viewer PUBLIC ${SDL2main_LIB})
 target_link_libraries(Viewer PUBLIC ${SDL2_LIB})
 target_link_libraries(Viewer PUBLIC ${SDL2_image_LIB})
 target_link_libraries(Viewer PUBLIC CurveLib)
+target_link_libraries(Viewer PUBLIC GPUcompute)
 target_link_libraries(Viewer PUBLIC Imgui)
