@@ -15,6 +15,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <chrono>
 
 #include <glm/gtc/matrix_access.hpp>
 
@@ -28,7 +29,7 @@ private:
 
 	bool curveProcess(std::stringstream& cmd);
 
-	bool runTest();
+	bool runTest(std::stringstream& cmd);
 
 	bool printHelp();
 
@@ -65,7 +66,7 @@ bool CommandLine::process(const std::string& cmd)
 	if(cmd1 == "curve")
 		return curveProcess(str);
 	if(cmd1 == "test")
-		return runTest();
+		return runTest(str);
 	if(cmd1 == "help")
 		return printHelp();
 	if(cmd1 == "quit")
@@ -196,8 +197,11 @@ bool CommandLine::curveProcess(std::stringstream& cmd)
 }
 
 
-bool CommandLine::runTest()
+bool CommandLine::runTest(std::stringstream& cmd)
 {
+	std::string option;
+	cmd >> option;
+
 	using namespace GeomInv;
 	Line l(glm::dvec3(0,0,0), glm::dvec3(1,1,0));
 	assert_dvec3_equal(e(l,0), glm::dvec3(sqrt(0.5),sqrt(0.5),0));
@@ -234,19 +238,27 @@ bool CommandLine::runTest()
 	assert_double_equal(K(be,0), 0.195026);
 	assert_double_equal(T(be,0), 0.0166667);
 
-	std::vector<GeomOptimize::Input2D3> vec = {{{0,0},{1,0},1,-1}};
-	GeomOptimize opt;
-	std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
-	std::vector<GeomOptimize::Result> res = opt.optimize2D3(vec, dump);
-	BezierCurve optCurve = opt.createResultCurve(vec[0], res[0]);
+	if("opt" == option)
+	{
+		std::vector<GeomOptimize::Input2D3> vec = {{{0,0},{1,0},1,-1}};
+		GeomOptimize opt;
+		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
 
-	std::cout << res.size() << std::endl << res[0].t0 << std::endl << res[0].t1 <<  std::endl << res[0].norm << std::endl;
-	std::cout << (*dump)[0] << std::endl;
-	/*std::cout << std::endl;
-	std::cout << res[0].d[0] << std::endl << res[0].d[1] << std::endl << res[0].dd[0] << std::endl << res[0].dd[1] << std::endl << res[0].dd[2] << std::endl << res[0].dd[3] << std::endl;
-	std::cout << std::endl;
-	std::cout << res[0].integrals[0] << std::endl << res[0].integrals[1] << std::endl << res[0].integrals[2] << std::endl << res[0].integrals[3] << std::endl << res[0].integrals[4] << std::endl << res[0].integrals[5] << std::endl << res[0].integrals[6] << std::endl << res[0].integrals[7] << std::endl << res[0].integrals[8] << std::endl;*/
+		auto start = std::chrono::high_resolution_clock::now();
+		std::vector<GeomOptimize::Result> res = opt.optimize2D3(vec, dump);
+		auto end = std::chrono::high_resolution_clock::now();
+		BezierCurve optCurve = opt.createResultCurve(vec[0], res[0]);
 
+		std::cerr << "Single optimization done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+			<< " milliseconds, with results (" << res[0].t0 << "; " << res[0].t1 << ") generating a curve with norm " << res[0].norm << std::endl;
+
+		assert_double_equal((double)(*dump)[0], 42.0); // dummy assert for buffer binding problems
+		assert(res[0].norm <= 1.0f); // Depends on initial configuration, but with the current it can be done.
+	}
+	else if("test" == option)
+	{
+		std::cout << "Running tests:\n\t<no option> - run basic assertion tests on curve functions\n\topt - also test curve optimizations" << std::endl;
+	}
 	std::cout << "All tests ran in order." << std::endl;
 	return true;
 }
