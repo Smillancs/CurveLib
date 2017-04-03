@@ -126,7 +126,7 @@ GLuint gShaderProgram::loadShader(GLenum _shaderType, const char* _fileName)
 				shaderCode += line + "\n";
 			}
 		}
-		shaderCode += line + "\n";
+		else shaderCode += line + "\n";
 	}
 
 	shaderStream.close();
@@ -262,4 +262,24 @@ void gShaderProgram::SetCubeTexture(const char* _uniform, int _sampler, GLuint _
 	glActiveTexture(GL_TEXTURE0 + _sampler);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, _textureID);
 	SetUniform(_uniform, _sampler);
+}
+
+void gShaderProgram::DispatchCompute(GLuint _x, GLuint _y, GLuint _z)
+{
+	glDispatchCompute(_x, _y, _z);
+}
+
+void gShaderProgram::MemoryBarrier(GLbitfield _barrier)
+{
+	glMemoryBarrier(_barrier);
+}
+
+void gShaderProgram::BindBufferBase(GLenum _target, GLuint _index, GLuint _buffer)
+{
+	glBindBufferBase(_target, _index, _buffer);
+}
+
+GLuint gShaderProgram::ID() const
+{
+	return m_id_program;
 }

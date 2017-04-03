@@ -1,7 +1,6 @@
 #pragma once
 
 #include <GL/glew.h>
-#include <SDL_opengl.h>
 
 #include <map>
 #include <string>
@@ -25,6 +24,10 @@ public:
 	void On();
 	void Off();
 
+	void DispatchCompute(GLuint _x, GLuint _y, GLuint _z);
+	void MemoryBarrier(GLbitfield);
+	void BindBufferBase(GLenum _target, GLuint _index, GLuint _buffer);
+	
 	void Clean();
 
 	void SetUniform(const char* _uniform, const glm::vec2& _vec);
@@ -38,6 +41,9 @@ public:
 	void SetUniform(const char* _uniform, float _a, float _b);
 	void SetTexture(const char* _uniform, int _sampler, GLuint _textureID);
 	void SetCubeTexture(const char* _uniform, int _sampler, GLuint _textureID);
+	
+	GLuint ID() const;
+	operator int() const { return ID(); }
 protected:
 	GLuint	getLocation(const char* _uniform);
 	GLuint	loadShader(GLenum _shaderType, const char* _fileName);
