@@ -23,8 +23,8 @@ bool CMyApp::Init()
 	glEnable(GL_DEPTH_TEST);
 
     axes = coordAxes();
-	
-	std::vector<GeomOptimize::Input2D3> vec = {{{0,0},{1,0},1,-1}};
+
+	std::vector<GeomOptimize::Input2D3> vec = { {glm::vec2(0,0),glm::vec2(1,0),1,-1} };
 	GeomOptimize opt;
 	std::vector<GeomOptimize::Result> res = opt.optimize2D3(vec);
 	BezierCurve optCurve = opt.createResultCurve(vec[0], res[0]);

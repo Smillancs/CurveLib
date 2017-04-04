@@ -240,7 +240,7 @@ bool CommandLine::runTest(std::stringstream& cmd)
 
 	if("opt" == option)
 	{
-		std::vector<GeomOptimize::Input2D3> vec = {{{0,0},{1,0},1,-1}};
+		std::vector<GeomOptimize::Input2D3> vec = {{glm::vec2(0,0),glm::vec2(1,0),1,-1}};
 		GeomOptimize opt;
 		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
 
