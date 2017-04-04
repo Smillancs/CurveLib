@@ -23,7 +23,7 @@ uniform mat4 VP;
 uniform int pointNum = 0;
 
 #incl ../Assets/BezierEval.glsl
-//#incl ../Assets/GeomInvariant.glsl
+#incl ../Assets/GeomInvariant.glsl
 
 void main()
 {
