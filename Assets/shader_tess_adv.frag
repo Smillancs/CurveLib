@@ -1,4 +1,5 @@
 #version 420
+#define max_length 128
 
 in block
 {
@@ -17,11 +18,11 @@ void main()
 {
 	int MAX_STEP = 32;
 	bool found = false;
-	
+
 	for(int i=0; i<MAX_STEP && !found;++i)
 	{
 	}
 
-	vec2 pos = gl_FragCoord;
+	vec2 pos = gl_FragCoord.xy;
 	fs_out_col = vec4(In.k, 5*In.t, -5*In.t, 1);
 }

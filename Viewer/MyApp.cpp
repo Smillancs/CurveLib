@@ -22,15 +22,15 @@ bool CMyApp::Init()
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 
-    axes = coordAxes();
+  axes = coordAxes();
 
 	std::vector<GeomOptimize::Input2D3> vec = { {glm::vec2(0,0),glm::vec2(1,0),1,-1} };
 	GeomOptimize opt;
 	std::vector<GeomOptimize::Result> res = opt.optimize2D3(vec);
 	BezierCurve optCurve = opt.createResultCurve(vec[0], res[0]);
 
-	Curve& c = optCurve;
-	//Curve& c = ExampleHandler::get(3);
+	//Curve& c = optCurve;
+	Curve& c = ExampleHandler::get(3);
 
 	CurveRenderer ren(c);
 	ren.genBufferTesselation(N, 0, 1);
@@ -40,8 +40,8 @@ bool CMyApp::Init()
 	ren2.genBufferNormal(N, 0, 1);
 	m_vb = ren2.getBuffer();
 
-	m_program_curve.AttachShader(GL_VERTEX_SHADER, "shader_curve.vert");
-	m_program_curve.AttachShader(GL_FRAGMENT_SHADER, "shader_curve.frag");
+	m_program_curve.AttachShader(GL_VERTEX_SHADER, "../Assets/shader_curve.vert");
+	m_program_curve.AttachShader(GL_FRAGMENT_SHADER, "../Assets/shader_curve.frag");
 	addCommonShaderAttrib(m_program_curve);
 
 	if ( !m_program_curve.LinkProgram() )
@@ -49,12 +49,12 @@ bool CMyApp::Init()
 		return false;
 	}
 
-	m_program_tess.AttachShader(GL_VERTEX_SHADER, "shader_tess.vert");
-	m_program_tess.AttachShader(GL_TESS_CONTROL_SHADER, "beztcs.tcs");
-	m_program_tess.AttachShader(GL_TESS_EVALUATION_SHADER, "beztes.tes");
-	m_program_tess.AttachShader(GL_FRAGMENT_SHADER, "shader_tess.frag");
+	m_program_tess.AttachShader(GL_VERTEX_SHADER, "../Assets/shader_tess.vert");
+	m_program_tess.AttachShader(GL_TESS_CONTROL_SHADER, "../Assets/beztcs.tcs");
+	m_program_tess.AttachShader(GL_TESS_EVALUATION_SHADER, "../Assets/beztes.tes");
+	m_program_tess.AttachShader(GL_FRAGMENT_SHADER, "../Assets/shader_tess.frag");
 	addCommonShaderAttrib(m_program_tess);
-	
+
 	if ( !m_program_tess.LinkProgram() )
 	{
 		return false;
@@ -67,10 +67,10 @@ bool CMyApp::Init()
 	m_vbBez = ren3.getBuffer();
 	vertsInPatch = cp.size();
 
-	m_program_bez.AttachShader(GL_VERTEX_SHADER, "shader_tess_adv.vert");
-	m_program_bez.AttachShader(GL_TESS_CONTROL_SHADER, "shader_tess_adv.tcs");
-	m_program_bez.AttachShader(GL_TESS_EVALUATION_SHADER, "shader_tess_adv.tes");
-	m_program_bez.AttachShader(GL_FRAGMENT_SHADER, "shader_tess_adv.frag");
+	m_program_bez.AttachShader(GL_VERTEX_SHADER, "../Assets/shader_tess_adv.vert");
+	m_program_bez.AttachShader(GL_TESS_CONTROL_SHADER, "../Assets/shader_tess_adv.tcs");
+	m_program_bez.AttachShader(GL_TESS_EVALUATION_SHADER, "../Assets/shader_tess_adv.tes");
+	m_program_bez.AttachShader(GL_FRAGMENT_SHADER, "../Assets/shader_tess_adv.frag");
 	addCommonShaderAttrib(m_program_bez);
 
 	if ( !m_program_bez.LinkProgram())
@@ -78,8 +78,8 @@ bool CMyApp::Init()
 		return false;
 	}
 
-	m_program_basic.AttachShader(GL_VERTEX_SHADER, "shader_basic.vert");
-	m_program_basic.AttachShader(GL_FRAGMENT_SHADER, "shader_basic.frag");
+	m_program_basic.AttachShader(GL_VERTEX_SHADER, "../Assets/shader_basic.vert");
+	m_program_basic.AttachShader(GL_FRAGMENT_SHADER, "../Assets/shader_basic.frag");
 
 	m_program_basic.BindAttribLoc(0, "vs_in_pos");
 	m_program_basic.BindAttribLoc(1, "vs_in_col");
@@ -152,7 +152,7 @@ void CMyApp::Render()
 	else
 	{
 		m_program_curve.On();
-		
+
 		m_program_curve.SetUniform( "VP", vp );
 
 		m_vb.On();
@@ -162,7 +162,7 @@ void CMyApp::Render()
 		m_program_curve.Off();
 	}
 	m_program_basic.On();
-	
+
 	m_program_basic.SetUniform( "VP", vp );
 
 	axes.On();
@@ -212,7 +212,7 @@ void CMyApp::Run()
 	if (!Init())
 	{
 		SDL_DestroyWindow(win);
-		std::cout << "[app.Init] Az alkalmazás inicializálása közben hibatörtént!" << std::endl;
+		std::cout << "[app.Init] Az alkalmazï¿½s inicializï¿½lï¿½sa kï¿½zben hibatï¿½rtï¿½nt!" << std::endl;
 		exit(1);
 	}
 	bool quit = false;
@@ -273,7 +273,7 @@ void CMyApp::initGraphics()
 {
 	if (SDL_Init(SDL_INIT_VIDEO) == -1)
 	{
-		std::cout << "[SDL indítása]Hiba az SDL inicializálása közben: " << SDL_GetError() << std::endl;
+		std::cout << "[SDL indï¿½tï¿½sa]Hiba az SDL inicializï¿½lï¿½sa kï¿½zben: " << SDL_GetError() << std::endl;
 		exit(1);
 	}
 
@@ -293,14 +293,14 @@ void CMyApp::initGraphics()
 
 	if (win == 0)
 	{
-		std::cout << "[Ablak létrehozása]Hiba az SDL inicializálása közben: " << SDL_GetError() << std::endl;
+		std::cout << "[Ablak lï¿½trehozï¿½sa]Hiba az SDL inicializï¿½lï¿½sa kï¿½zben: " << SDL_GetError() << std::endl;
 		exit(1);
 	}
 
 	context = SDL_GL_CreateContext(win);
 	if (context == 0)
 	{
-		std::cout << "[OGL context létrehozása]Hiba az SDL inicializálása közben: " << SDL_GetError() << std::endl;
+		std::cout << "[OGL context lï¿½trehozï¿½sa]Hiba az SDL inicializï¿½lï¿½sa kï¿½zben: " << SDL_GetError() << std::endl;
 		exit(1);
 	}
 
@@ -309,7 +309,7 @@ void CMyApp::initGraphics()
 	GLenum error = glewInit();
 	if (error != GLEW_OK)
 	{
-		std::cout << "[GLEW] Hiba az inicializálás során!" << std::endl;
+		std::cout << "[GLEW] Hiba az inicializï¿½lï¿½s sorï¿½n!" << std::endl;
 		exit(1);
 	}
 
@@ -323,7 +323,7 @@ void CMyApp::initGraphics()
 		SDL_GL_DeleteContext(context);
 		SDL_DestroyWindow(win);
 
-		std::cout << "[OGL context létrehozása] Nem sikerült létrehozni az OpenGL context-et! Lehet, hogy az SDL_GL_SetAttribute(...) hívásoknál az egyik beállítás helytelen." << std::endl;
+		std::cout << "[OGL context lï¿½trehozï¿½sa] Nem sikerï¿½lt lï¿½trehozni az OpenGL context-et! Lehet, hogy az SDL_GL_SetAttribute(...) hï¿½vï¿½soknï¿½l az egyik beï¿½llï¿½tï¿½s helytelen." << std::endl;
 
 		exit(1);
 	}

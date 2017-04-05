@@ -51,3 +51,9 @@ inline bool assert_dvec3_equal(glm::dvec3 x, glm::dvec3 y, bool print = true)
 	}
 	return l;
 }
+
+inline bool assert_(bool statement)
+{
+	if(!statement) throw(Exception("Assertion failed."));
+	return statement;
+}

@@ -36,13 +36,15 @@ layout(std430, binding = 2) buffer debugInfo
 	float data[100];
 } dump;
 
+#define max_length 128
+
+vec3 points[max_length];
+
 const int pointNum = 4;
 
-struct {vec3 pos;} In[pointNum];
+#incl ../Assets/BezierEval.glsl
 
-#incl ../GPUcompute/BezierEval.glsl
-
-#incl ../GPUcompute/GeomInvariant.glsl
+#incl ../Assets/GeomInvariant.glsl
 
 vec2 rotate(vec2 v, float a)
 {
@@ -54,10 +56,10 @@ void calculateControlPoints(float d0, float d1)
 	uint id = gl_WorkGroupID.x;
 	vec2 e0 = rotate(normalize(inBuf.data[id].p1-inBuf.data[id].p0), inBuf.data[id].alpha);
 	vec2 e1 = rotate(normalize(inBuf.data[id].p1-inBuf.data[id].p0), inBuf.data[id].beta);
-	In[0].pos = vec3(inBuf.data[id].p0, 0);
-	In[1].pos = vec3(inBuf.data[id].p0 + d0*e0/(pointNum-1), 0);
-	In[2].pos = vec3(inBuf.data[id].p1 - d1*e1/(pointNum-1), 0);
-	In[3].pos = vec3(inBuf.data[id].p1, 0);
+	points[0] = vec3(inBuf.data[id].p0, 0);
+	points[1] = vec3(inBuf.data[id].p0 + d0*e0/(pointNum-1), 0);
+	points[2] = vec3(inBuf.data[id].p1 - d1*e1/(pointNum-1), 0);
+	points[3] = vec3(inBuf.data[id].p1, 0);
 }
 
 float integral2()
@@ -67,7 +69,7 @@ float integral2()
 
 	for(float i = step / 2; i < 1.; i += step)
 	{
-		float val = dK(i);
+		float val = dK(points, 4, i);
 		s += val * val * step;
 	}
 	return s;

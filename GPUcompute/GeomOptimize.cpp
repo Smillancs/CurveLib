@@ -53,7 +53,7 @@ std::vector<GeomOptimize::Result> GeomOptimize::optimize2D3(const std::vector<Ge
 
 GeomOptimize::GeomOptimize()
 {
-	program.AttachShader(GL_COMPUTE_SHADER, "../GPUcompute/optimize.glsl");
+	program.AttachShader(GL_COMPUTE_SHADER, "../Assets/optimize.glsl");
 	program.LinkProgram();
 }
 

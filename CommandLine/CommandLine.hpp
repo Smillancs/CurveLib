@@ -253,7 +253,7 @@ bool CommandLine::runTest(std::stringstream& cmd)
 			<< " milliseconds, with results (" << res[0].t0 << "; " << res[0].t1 << ") generating a curve with norm " << res[0].norm << std::endl;
 
 		assert_double_equal((double)(*dump)[0], 42.0); // dummy assert for buffer binding problems
-		assert(res[0].norm <= 1.0f); // Depends on initial configuration, but with the current it can be done.
+		assert_(res[0].norm <= 1.0f); // Depends on initial configuration, but with the current it can be done.
 	}
 	else if("test" == option)
 	{

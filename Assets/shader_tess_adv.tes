@@ -20,7 +20,7 @@ out block
 
 uniform vec3 pointData[max_length];
 uniform mat4 VP;
-uniform int pointNum = 0;
+uniform int point_num = 4;
 
 #incl ../Assets/BezierEval.glsl
 #incl ../Assets/GeomInvariant.glsl
@@ -28,11 +28,11 @@ uniform int pointNum = 0;
 void main()
 {
 	float u = gl_TessCoord.x;
-	vec3 bpos = AllBernstein(pointData,u,pointNum);
+	vec3 bpos = AllBernstein(pointData,u,point_num);
 	gl_Position = VP*vec4(bpos,1);
 	Out.pos = bpos;
 	Out.patch_coords = gl_TessCoord.xyz;
-	Out.k = 0;//K(u);
-	Out.t = 0;//T(u);
+	Out.k = K(pointData, point_num, u);
+	Out.t = T(pointData, point_num, u);
 	Out.col = vec3(0);
 }
