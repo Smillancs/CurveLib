@@ -4,6 +4,8 @@ set(CMAKE_CXX_FLAGS "-std=c++11")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 
+file(COPY Assets DESTINATION ${CMAKE_BINARY_DIR})
+
 project(Curve_Lib)
 
 add_subdirectory(CurveLib)
