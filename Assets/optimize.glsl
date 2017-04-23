@@ -38,8 +38,6 @@ layout(std430, binding = 2) buffer debugInfo
 
 #define max_length 128
 
-vec3 points[max_length];
-
 const int pointNum = 4;
 
 #incl ../Assets/BezierEval.glsl
@@ -51,8 +49,9 @@ vec2 rotate(vec2 v, float a)
 	return vec2(v.x*cos(a)-v.y*sin(a), v.y*cos(a)+v.x*sin(a));
 }
 
-void calculateControlPoints(float d0, float d1)
+vec3[max_length] calculateControlPoints(float d0, float d1)
 {
+	vec3 points[max_length];
 	uint id = gl_WorkGroupID.x;
 	vec2 e0 = rotate(normalize(inBuf.data[id].p1-inBuf.data[id].p0), inBuf.data[id].alpha);
 	vec2 e1 = rotate(normalize(inBuf.data[id].p1-inBuf.data[id].p0), inBuf.data[id].beta);
@@ -60,19 +59,30 @@ void calculateControlPoints(float d0, float d1)
 	points[1] = vec3(inBuf.data[id].p0 + d0*e0/(pointNum-1), 0);
 	points[2] = vec3(inBuf.data[id].p1 - d1*e1/(pointNum-1), 0);
 	points[3] = vec3(inBuf.data[id].p1, 0);
+	return points;
 }
 
-float integral2()
-{
-	float s = 0;
-	float step = 0.1;
+// Gauss–Legendre quadrature formula
+const float legendre_coeffs[8] = float[8](0.050614, 0.111191, 0.156854, 0.181342, 0.181341, 0.156852, 0.111190, 0.050614);
+const float legendre_roots[8]  = float[8](0.019855, 0.101667, 0.237235, 0.408284, 0.591719, 0.762768, 0.898334, 0.980145);
 
+float integral2(vec3 points[max_length])
+{
+	float s = 0.f;
+
+	for(int i = 0; i < 8; ++i)
+	{
+		float val = dK(points, pointNum, legendre_roots[i]);
+		s += val * val * legendre_coeffs[i];
+	}
+
+	/*float step = 0.01;
 	for(float i = step / 2; i < 1.; i += step)
 	{
-		float val = dK(points, 4, i);
+		float val = dK(points, pointNum, i);
 		s += val * val * step;
-	}
-	return s;
+	}*/
+	return sqrt(s);
 }
 
 #define ITERATIONS 10
@@ -94,8 +104,8 @@ void main()
 
 	for(int i=0;i<ITERATIONS;++i)
 	{
-		calculateControlPoints(t0+(int(thread)%3-1)*eps, t1+(int(thread)/3-1)*eps);
-		integrals[thread] = integral2();
+		vec3 points[max_length] = calculateControlPoints(t0+(int(thread)%3-1)*eps, t1+(int(thread)/3-1)*eps);
+		integrals[thread] = integral2(points);
 
 		barrier();
 
@@ -127,11 +137,10 @@ void main()
 
 	if(thread == 0)
 	{
-		calculateControlPoints(t0, t1);
-		float s = integral2();
+		vec3 points[max_length] = calculateControlPoints(t0, t1);
 		positions[ITERATIONS].t0 = t0;
 		positions[ITERATIONS].t1 = t1;
-		positions[ITERATIONS].norm = integral2();
+		positions[ITERATIONS].norm = integral2(points);
 
 		int min = 0;
 		for(int i=1;i<=ITERATIONS;++i)
