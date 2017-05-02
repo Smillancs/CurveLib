@@ -6,8 +6,8 @@
 class gCamera
 {
 public:
-	gCamera(void);
-	gCamera(glm::vec3 _eye, glm::vec3 _at, glm::vec3 _up);
+	gCamera(void); 
+	gCamera(glm::vec3 _at, double distance, glm::vec3 _up);
 	~gCamera(void);
 
 	/// <summary>
@@ -18,7 +18,7 @@ public:
 
 	void Update(float _deltaTime);
 
-	void SetView(glm::vec3 _eye, glm::vec3 _at, glm::vec3 _up);
+	void SetView(glm::vec3 _at, double distance, glm::vec3 _up);
 	void SetProj(float _angle, float _aspect, float _zn, float _zf); 
 	void LookAt(glm::vec3 _at);
 
@@ -36,6 +36,11 @@ public:
 	glm::vec3 GetUp()
 	{
 		return m_up;
+	}
+
+	float GetDistance()
+	{
+		return m_dist;
 	}
 
 	glm::mat4 GetProj()
@@ -118,7 +123,6 @@ private:
 
 	glm::mat4	m_matProj;
 
-	float	m_goFw;
-	float	m_goRight;
+	float	m_goFw, m_goRight, m_goUp;
 };
 

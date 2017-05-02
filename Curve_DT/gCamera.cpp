@@ -6,27 +6,27 @@
 /// <summary>
 /// Initializes a new instance of the <see cref="gCamera"/> class.
 /// </summary>
-gCamera::gCamera(void) : m_eye(0.0f, 20.0f, 20.0f), m_at(0.0f), m_up(0.0f, 1.0f, 0.0f), m_speed(16.0f), m_goFw(0), m_goRight(0), m_slow(false)
+gCamera::gCamera(void) : m_eye(0.0f, 20.0f, 20.0f), m_at(0.0f), m_up(0.0f, 1.0f, 0.0f), m_speed(16.0f), m_goFw(0), m_goUp(0), m_goRight(0), m_slow(false)
 {
-	SetView( glm::vec3(0,20,20), glm::vec3(0,0,0), glm::vec3(0,1,0));
+	SetView( glm::vec3(0,20,20), 10, glm::vec3(0,1,0));
 
 	m_dist = glm::length( m_at - m_eye );	
 
 	SetProj(45.0f, 640/480.0f, 0.001f, 1000.0f);
 }
 
-gCamera::gCamera(glm::vec3 _eye, glm::vec3 _at, glm::vec3 _up) : m_speed(16.0f), m_goFw(0), m_goRight(0), m_dist(10), m_slow(false)
+gCamera::gCamera(glm::vec3 _at, double distance, glm::vec3 _up) : m_speed(16.0f), m_goFw(0), m_goRight(0), m_goUp(0), m_dist(distance), m_slow(false)
 {
-	SetView(_eye, _at, _up);
+	SetView(_at, distance, _up);
 }
 
 gCamera::~gCamera(void)
 {
 }
 
-void gCamera::SetView(glm::vec3 _eye, glm::vec3 _at, glm::vec3 _up)
+void gCamera::SetView(glm::vec3 _at, double distance, glm::vec3 _up)
 {
-	m_eye	= _eye;
+	m_eye	= _at + glm::vec3(0,0,distance);
 	m_at	= _at;
 	m_up	= _up;
 
@@ -52,24 +52,11 @@ glm::mat4 gCamera::GetViewMatrix()
 
 void gCamera::Update(float _deltaTime)
 {
-	m_eye += (m_goFw*m_fw + m_goRight*m_st)*m_speed*_deltaTime;
-	m_at  += (m_goFw*m_fw + m_goRight*m_st)*m_speed*_deltaTime;
+	m_at  += (m_goRight*m_st + m_goUp*m_up + m_goFw*m_fw)*m_speed*_deltaTime;
+	m_eye = m_at + glm::vec3(0,0,m_dist);
 
 	m_viewMatrix = glm::lookAt( m_eye, m_at, m_up);
 	m_matViewProj = m_matProj * m_viewMatrix;
-}
-
-void gCamera::UpdateUV(float du, float dv)
-{
-	m_u		+= du;
-	m_v		 = glm::clamp<float>(m_v + dv, 0.1f, 3.1f);
-
-	m_at = m_eye + m_dist*glm::vec3(	cosf(m_u)*sinf(m_v), 
-										cosf(m_v), 
-										sinf(m_u)*sinf(m_v) );
-
-	m_fw = glm::normalize( m_at - m_eye );
-	m_st = glm::normalize( glm::cross( m_fw, m_up ) );
 }
 
 void gCamera::SetSpeed(float _val)
@@ -97,16 +84,22 @@ void gCamera::KeyboardDown(SDL_KeyboardEvent& key)
 		}
 		break;
 	case SDLK_w:
-			m_goFw = 1;
+			m_goUp = 1;
 		break;
 	case SDLK_s:
-			m_goFw = -1;
+			m_goUp = -1;
 		break;
 	case SDLK_a:
 			m_goRight = -1;
 		break;
 	case SDLK_d:
 			m_goRight = 1;
+		break;
+	case SDLK_q:
+			m_goFw = 1;
+		break;
+	case SDLK_e:
+			m_goFw = -1;
 		break;
 	}
 }
@@ -124,13 +117,17 @@ void gCamera::KeyboardUp(SDL_KeyboardEvent& key)
 			m_speed *= 4.0f;
 		}
 		break;
-	case SDLK_w:
-	case SDLK_s:
+	case SDLK_q:
+	case SDLK_e:
 			m_goFw = 0;
-		break;
+			break;
 	case SDLK_a:
 	case SDLK_d:
 			m_goRight = 0;
+		break;
+	case SDLK_w:
+	case SDLK_s:
+			m_goUp = 0;
 		break;
 	}
 }
@@ -139,12 +136,7 @@ void gCamera::MouseMove(SDL_MouseMotionEvent& mouse)
 {
 	if ( mouse.state & SDL_BUTTON_LMASK )
 	{
-		UpdateUV(mouse.xrel/100.0f, mouse.yrel/100.0f);
+	//	UpdateUV(mouse.xrel/100.0f, mouse.yrel/100.0f);
 	}
-}
-
-void gCamera::LookAt(glm::vec3 _at)
-{
-	SetView(m_eye, _at, m_up);
 }
 
