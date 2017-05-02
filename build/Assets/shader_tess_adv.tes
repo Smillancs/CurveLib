@@ -1,0 +1,38 @@
+#version 450
+#define max_length 128
+
+layout (isolines,equal_spacing) in;
+
+in block
+{
+	vec3	pos;
+} In[];
+
+out block
+{
+	dvec3	pos;
+	vec3	col;
+	dvec3	patch_coords;
+	double	k;
+	double	t;
+} Out;
+
+
+uniform vec3 pointData[max_length];
+uniform mat4 VP;
+uniform int pointNum = 0;
+
+#incl ../Assets/BezierEval.glsl
+#incl ../Assets/GeomInvariant.glsl
+
+void main()
+{
+	double u = gl_TessCoord.x;
+	dvec3 bpos = AllBernstein(pointData,pointNum,u);
+	gl_Position = VP*vec4(bpos,1);
+	Out.pos = bpos;
+	Out.patch_coords = gl_TessCoord.xyz;
+	Out.k = K(pointData,pointNum,u);
+	Out.t = T(pointData,pointNum,u);
+	Out.col = vec3(0);
+}

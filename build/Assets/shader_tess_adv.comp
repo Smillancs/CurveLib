@@ -1,0 +1,21 @@
+#version 420
+
+uniform float roll;
+uniform image2D destTex;
+
+in block
+{
+	vec3	pos;
+	vec3	col;
+	vec3	patch_coords;
+	float	k;
+	float	t;
+} In;
+
+void main()
+{
+	/*ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
+    float localCoef = length(vec2(ivec2(gl_LocalInvocationID.xy)-8)/8.0);
+    float globalCoef = sin(float(gl_WorkGroupID.x+gl_WorkGroupID.y)*0.1 + roll)*0.5;
+    imageStore(destTex, storePos, vec4(1.0-globalCoef*localCoef, 0.0, 0.0, 0.0));*/
+}

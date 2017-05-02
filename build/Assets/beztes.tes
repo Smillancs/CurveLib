@@ -1,0 +1,50 @@
+#version 420
+
+layout (isolines,equal_spacing) in;
+
+in block
+{
+	vec3	pos;
+	vec3	e;
+	vec3	n;
+	vec3	b;
+	float	k;
+	float	t;
+} In[];
+
+out block
+{
+	vec3	pos;
+	vec3	e;
+	vec3	n;
+	vec3	b;
+	float	k;
+	float	t;
+	vec3	patch_coords;
+} Out;
+
+uniform mat4 MVP;
+uniform mat4 world;
+uniform mat4 worldIT;
+
+void main()
+{
+
+	float u = gl_TessCoord.x;
+		
+	vec3 p0 = In[0].pos;
+	vec3 p1 = In[1].pos;
+	
+	vec3 p = mix(p0,p1,u);
+	
+	gl_Position = MVP*vec4(p, 1);
+
+	Out.pos = (world*vec4(p,1)).xyz;
+	Out.e = In[0].e;
+	Out.n = In[0].n;
+	Out.b = In[0].b;
+	Out.t = In[0].t;
+	Out.k = In[0].k;
+	Out.patch_coords = gl_TessCoord.xyz;
+	
+}
