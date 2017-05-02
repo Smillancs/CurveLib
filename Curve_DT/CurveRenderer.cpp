@@ -82,21 +82,18 @@ void CurveRenderer::genBufferNormal(const unsigned N, const float a, const float
 void CurveRenderer::genBufferCps(const std::vector<glm::vec3>& cp)
 {
 	vb.AddAttribute(0, 3); // position
-/*	for (const auto &i : cp)
+	if (!cp.empty())
 	{
-		vb.AddData(0,i);
-	}*/
-	vb.AddData(0,cp[0]);
-	vb.AddData(0,cp[cp.size()-1]);
+		vb.AddData(0, cp[0]);
+		for (size_t i = 1; i < cp.size(); ++i)
+		{
+			vb.AddData(0, cp[i]);
+			vb.AddData(0, cp[i]);
+		}
+	}
 }
 
 gVertexBuffer CurveRenderer::getBuffer()
 {
-	if (dirty)
-	{
-		genBufferNormal(n,a,b);
-		dirty = false;
-		return vb;
-	}
-	else return vb;
+	return vb;
 }

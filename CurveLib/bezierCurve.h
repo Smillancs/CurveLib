@@ -49,9 +49,12 @@ public:
 	std::vector<glm::vec3> GetGlmControlPoints() const 
 	{
 		std::vector<glm::vec3> tempcp = {}; 
-		for(auto &i : cp)
+		if (!cp.empty())
 		{
-			tempcp.push_back(glm::vec3(i.x(),i.y(),i.z()));
+			for(auto &i : cp)
+			{
+				tempcp.push_back(glm::vec3(i.x(),i.y(),i.z()));
+			}
 		}
 		return tempcp; 
 	}
