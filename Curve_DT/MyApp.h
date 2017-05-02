@@ -31,6 +31,9 @@ public:
 	void Clean();
 
 	void Update();
+	glm::vec3 QuerryAndShow(const std::vector<glm::vec3> & cp, const int size, const glm::vec3 &point, const glm::mat4 &trf);
+	void DrawHull(const gVertexBuffer & from, const int size, const glm::mat4 &trf);
+	void DrawGuess(const glm::vec3 &point, const glm::vec3 &guess);
 	void Render();
 
 	void KeyboardDown(SDL_KeyboardEvent&);
