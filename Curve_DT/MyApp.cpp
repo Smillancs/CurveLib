@@ -15,13 +15,13 @@ CMyApp::~CMyApp(void)
 {
 	delete currentCurve;
 	delete generator;
+
+
 }
 
 
 bool CMyApp::Init()
 {
-	glClearColor(1.0, 1.0, 1.0, 1.0);
-
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 		
@@ -29,6 +29,20 @@ bool CMyApp::Init()
 
 	generator->genBufferCps(static_cast<BezierCurve*>(currentCurve)->GetGlmControlPoints());
 	m_vbBez = generator->getBuffer();
+
+	m_vbQuad.AddAttribute(0, 3);
+
+	m_vbQuad.AddData(0, -100, 100, 0);
+	m_vbQuad.AddData(0, 100, -100, 0);
+	m_vbQuad.AddData(0, -100, -100, 0);
+	m_vbQuad.AddData(0, 100, 100, 0);
+		
+	m_vbQuad.AddIndex(2, 3, 0);
+	m_vbQuad.AddIndex(2, 1, 3);
+
+	res.x = res.y = 20;
+
+	m_vbQuad.InitBuffers();
 
 	m_program_bez.AttachShader(GL_VERTEX_SHADER, "../Assets/shader_tess_adv.vert");
 	m_program_bez.AttachShader(GL_TESS_CONTROL_SHADER, "../Assets/shader_tess_adv.tcs");

@@ -53,12 +53,15 @@ private:
 	Curve* currentCurve = &ExampleHandler::get(3);
 	CurveRenderer* generator;
 
+	GLuint fb, colorBuffer, pointBuffer;
+
 protected:
 	SDL_Window* win;
 	SDL_GLContext context;
 	
+	glm::vec2 res;
 	gCamera			m_camera;
-	gShaderProgram	m_program_bez;
-	gVertexBuffer	m_vbBez;	
+	gShaderProgram	m_program_bez, m_program_lines;
+	gVertexBuffer	m_vbBez, m_vbQuad;	
 };
 
