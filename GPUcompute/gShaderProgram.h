@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <list>
+#include <vector>
 
 #include <glm/glm.hpp>
 
@@ -27,7 +28,7 @@ public:
 	void DispatchCompute(GLuint _x, GLuint _y, GLuint _z);
 	void MemoryBarrier(GLbitfield);
 	void BindBufferBase(GLenum _target, GLuint _index, GLuint _buffer);
-	
+
 	void Clean();
 
 	void SetUniform(const char* _uniform, const glm::vec2& _vec);
@@ -41,17 +42,21 @@ public:
 	void SetUniform(const char* _uniform, float _a, float _b);
 	void SetTexture(const char* _uniform, int _sampler, GLuint _textureID);
 	void SetCubeTexture(const char* _uniform, int _sampler, GLuint _textureID);
-	
+  void SetSubroutine(GLenum _shaderType, const char* _uniformName, const char* _subrName);
+
 	GLuint ID() const;
 	operator int() const { return ID(); }
 protected:
 	GLuint	getLocation(const char* _uniform);
+  GLuint  getSubroutineUniformLocation(GLenum _shaderType, const char* _uniform);
+  GLuint  getSubroutineIndex(GLenum _shaderType, const char* _name);
 	GLuint	loadShader(GLenum _shaderType, const char* _fileName);
 
 	GLuint							m_id_program;
 	std::map< std::string, GLint >	m_map_uniform_locations;
 	std::list< GLuint >				m_list_shaders_attached;
 
+  std::vector< GLuint > subroutineIndices;
+
 	bool	m_verbose;
 };
-

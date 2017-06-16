@@ -26,7 +26,7 @@ public:
 		float beta;
 	};
 
-	std::vector<Result> optimize2D3(const std::vector<Input2D3>&, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
+	std::vector<Result> optimize2D3(const std::string& targetFunction, const std::vector<Input2D3>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
 
 	GeomOptimize();
 

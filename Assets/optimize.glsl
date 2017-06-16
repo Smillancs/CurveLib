@@ -44,6 +44,17 @@ const int pointNum = 4;
 
 #incl ../Assets/GeomInvariant.glsl
 
+subroutine float GeomInvariantEval(vec3 data[max_length], int point_num, float t);
+
+subroutine ( GeomInvariantEval ) float curvature(vec3 data[max_length], int point_num, float t) {
+    return K(data, point_num, t);
+}
+subroutine ( GeomInvariantEval ) float curvatureD(vec3 data[max_length], int point_num, float t) {
+    return dK(data, point_num, t);
+}
+
+subroutine uniform GeomInvariantEval Eval;
+
 vec2 rotate(vec2 v, float a)
 {
 	return vec2(v.x*cos(a)-v.y*sin(a), v.y*cos(a)+v.x*sin(a));
@@ -72,14 +83,14 @@ float integral2(vec3 points[max_length])
 
 	for(int i = 0; i < 8; ++i)
 	{
-		float val = dK(points, pointNum, legendre_roots[i]);
+		float val = Eval(points, pointNum, legendre_roots[i]);
 		s += val * val * legendre_coeffs[i];
 	}
 
 	/*float step = 0.01;
 	for(float i = step / 2; i < 1.; i += step)
 	{
-		float val = dK(points, pointNum, i);
+		float val = Eval(points, pointNum, i);
 		s += val * val * step;
 	}*/
 	return sqrt(s);

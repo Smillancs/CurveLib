@@ -240,20 +240,23 @@ bool CommandLine::runTest(std::stringstream& cmd)
 
 	if("opt" == option)
 	{
+    std::string target;
+    cmd >> target;
+
 		std::vector<GeomOptimize::Input2D3> vec = {{glm::vec2(0,0),glm::vec2(1,0),1,-1}};
 		GeomOptimize opt;
 		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
 
 		auto start = std::chrono::high_resolution_clock::now();
-		std::vector<GeomOptimize::Result> res = opt.optimize2D3(vec, dump);
+		std::vector<GeomOptimize::Result> res = opt.optimize2D3(target, vec, dump);
 		auto end = std::chrono::high_resolution_clock::now();
 		BezierCurve optCurve = opt.createResultCurve(vec[0], res[0]);
 
-		std::cerr << "Single optimization done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+		std::cerr << "Single optimization by " << target << " done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
 			<< " milliseconds, with results (" << res[0].t0 << "; " << res[0].t1 << ") generating a curve with norm " << res[0].norm << std::endl;
 
 		assert_double_equal((double)(*dump)[0], 42.0); // dummy assert for buffer binding problems
-		assert_(res[0].norm <= 1.0f); // Depends on initial configuration, but with the current it can be done.
+		assert_(target != "curvatureD" || res[0].norm <= 1.0f); // Depends on initial configuration, but with the current it can be done.
 	}
 	else if("test" == option)
 	{

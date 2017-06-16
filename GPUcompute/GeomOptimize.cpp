@@ -4,10 +4,13 @@
 
 #include <glm/gtx/rotate_vector.hpp>
 
-std::vector<GeomOptimize::Result> GeomOptimize::optimize2D3(const std::vector<GeomOptimize::Input2D3>& input, const std::shared_ptr<std::vector<float>>& debugInfo)
+std::vector<GeomOptimize::Result> GeomOptimize::optimize2D3(const std::string& targetFunction, const std::vector<GeomOptimize::Input2D3>& input, const std::shared_ptr<std::vector<float>>& debugInfo)
 {
 	// Turn on compute shader
 	program.On();
+
+  // Set target function
+  program.SetSubroutine(GL_COMPUTE_SHADER, "Eval", targetFunction.c_str());
 
 	// Create and bind input buffer
 	gBuffer inBuf(GL_SHADER_STORAGE_BUFFER, input.size() * sizeof(GeomOptimize::Input2D3), input.data(), GL_STATIC_DRAW);

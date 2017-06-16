@@ -28,7 +28,7 @@ bool gShaderProgram::AttachShader( GLenum _shaderType,  const char* _filename )
 		{
 			if ( m_verbose )
 			{
-				std::cout << "Hiba a shader program létrehozásakor" << std::endl;
+				std::cout << "Hiba a shader program lï¿½trehozï¿½sakor" << std::endl;
 			}
 			return false;
 		}
@@ -65,10 +65,10 @@ bool gShaderProgram::LinkProgram()
 	return true;
 }
 
-// töröljük a shader programot, elõtte detach-oljuk a shadereket
+// tï¿½rï¿½ljï¿½k a shader programot, elï¿½tte detach-oljuk a shadereket
 void gShaderProgram::Clean()
 {
-	// töröljük a már linkelt linkelt shadereket
+	// tï¿½rï¿½ljï¿½k a mï¿½r linkelt linkelt shadereket
 	for (	std::list<GLuint>::iterator _it = m_list_shaders_attached.begin();
 			_it != m_list_shaders_attached.end();
 			++_it )
@@ -95,7 +95,7 @@ GLuint gShaderProgram::loadShader(GLenum _shaderType, const char* _fileName)
 	if ( loadedShader == 0 )
 	{
 		if (m_verbose)
-			fprintf(stderr, "Hiba a %s shader inicializálásakor (glCreateShader)!", _fileName);
+			fprintf(stderr, "Hiba a %s shader inicializï¿½lï¿½sakor (glCreateShader)!", _fileName);
 		return 0;
 	}
 
@@ -108,7 +108,7 @@ GLuint gShaderProgram::loadShader(GLenum _shaderType, const char* _fileName)
 	if ( !shaderStream.is_open() )
 	{
 		if (m_verbose)
-			fprintf(stderr, "Hiba a %s shader fájl betöltésekor!", _fileName);
+			fprintf(stderr, "Hiba a %s shader fï¿½jl betï¿½ltï¿½sekor!", _fileName);
 		return 0;
 	}
 
@@ -227,6 +227,16 @@ void gShaderProgram::SetUniform(const char* _uniform, const glm::mat4& _mat)
 	glUniformMatrix4fv( loc, 1, GL_FALSE, &(_mat[0][0]) );
 }
 
+void gShaderProgram::SetSubroutine(GLenum _shaderType, const char* _uniformName, const char* _subrName)
+{
+  GLuint ind = getSubroutineIndex(_shaderType, _subrName);
+  GLuint loc = getSubroutineUniformLocation(_shaderType, _uniformName);
+  if(subroutineIndices.size() <= loc)
+    subroutineIndices.resize(loc+1);
+  subroutineIndices[loc] = ind;
+  glUniformSubroutinesuiv(_shaderType, 1, &subroutineIndices[0]);
+}
+
 inline GLuint	gShaderProgram::getLocation(const char* _uniform)
 {
 	std::map< std::string, int >::iterator loc_it = m_map_uniform_locations.find(_uniform);
@@ -234,6 +244,32 @@ inline GLuint	gShaderProgram::getLocation(const char* _uniform)
 	{
 		GLint my_loc = glGetUniformLocation(m_id_program, _uniform);
 		m_map_uniform_locations[_uniform] = my_loc;
+		return my_loc;
+	}
+	else
+		return loc_it->second;
+}
+
+inline GLuint gShaderProgram::getSubroutineUniformLocation(GLenum _shaderType, const char* _uniform)
+{
+  std::map< std::string, int >::iterator loc_it = m_map_uniform_locations.find(_uniform);
+	if ( loc_it == m_map_uniform_locations.end() )
+	{
+		GLint my_loc = glGetSubroutineUniformLocation(m_id_program, _shaderType, _uniform);
+		m_map_uniform_locations[_uniform] = my_loc;
+		return my_loc;
+	}
+	else
+		return loc_it->second;
+}
+
+inline GLuint	gShaderProgram::getSubroutineIndex(GLenum _shaderType, const char* _name)
+{
+	std::map< std::string, int >::iterator loc_it = m_map_uniform_locations.find(_name);
+	if ( loc_it == m_map_uniform_locations.end() )
+	{
+		GLint my_loc = glGetSubroutineIndex(m_id_program, _shaderType, _name);
+		m_map_uniform_locations[_name] = my_loc;
 		return my_loc;
 	}
 	else
