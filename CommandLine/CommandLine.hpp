@@ -37,7 +37,7 @@ private:
 
 	bool OGLinited = false;
 
-	size_t activeCurve = 0;
+	int activeCurve = 0;
 };
 
 void CommandLine::run()
@@ -87,6 +87,21 @@ bool CommandLine::curveProcess(std::stringstream& cmd)
 			activeCurve = index;
 		std::cout << "Curve #" << activeCurve << ": " << ExampleHandler::get(activeCurve).about() << std::endl;
 	}
+  else if(cmd1 == "setrandom")
+  {
+    activeCurve = -1;
+    std::cout << "Curve #-1 (random curve): " << ExampleHandler::get(activeCurve).about() << std::endl;
+  }
+  else if(cmd1 == "newrandom")
+  {
+    activeCurve = -1;
+  	cmd >> cmd1;
+    int deg = atoi(cmd1.c_str());
+  	cmd >> cmd1;
+    int dim = atoi(cmd1.c_str());
+    ExampleHandler::newRandom(deg, dim);
+    std::cout << "Curve #-1 (random curve): " << ExampleHandler::get(activeCurve).about() << std::endl;
+  }
 	else if(cmd1 == "info")
 	{
 		std::cout << "Curve #" << activeCurve << ": " << ExampleHandler::get(activeCurve).about() << std::endl;
@@ -189,7 +204,7 @@ bool CommandLine::curveProcess(std::stringstream& cmd)
 	}
 	else if(cmd1 == "help")
 	{
-		std::cout << "Operations on curves:\n\tset - set active curve (from examples)\n\tinfo - print information about active curve\n\tf - evaluate curve in given parameter\n\td, dd, ddd - evaluate derivative of active curve\n\te, n, b - evaluate Frenet-frame of active curve\n\tK, dK, ddK - evaluate curvature and its derivatives\n\tT, dT - evaluate torsion and its derivatives" << std::endl;
+		std::cout << "Operations on curves:\n\tset - set active curve (from examples)\n\tsetrandom - set last generated random curve to active\n\tnewrandom <deg> <dim> - generate new random curve with given degree and dimension (2 or 3)\n\tinfo - print information about active curve\n\tf - evaluate curve in given parameter\n\td, dd, ddd - evaluate derivative of active curve\n\te, n, b - evaluate Frenet-frame of active curve\n\tK, dK, ddK - evaluate curvature and its derivatives\n\tT, dT - evaluate torsion and its derivatives" << std::endl;
 	}
 	else
 		throw Exception("This command does not exist for curves");
@@ -258,7 +273,7 @@ bool CommandLine::runTest(std::stringstream& cmd)
 		assert_double_equal((double)(*dump)[0], 42.0); // dummy assert for buffer binding problems
 		assert_(target != "curvatureD" || res[0].norm <= 1.0f); // Depends on initial configuration, but with the current it can be done.
 	}
-	else if("test" == option)
+	else if("help" == option)
 	{
 		std::cout << "Running tests:\n\t<no option> - run basic assertion tests on curve functions\n\topt - also test curve optimizations" << std::endl;
 	}

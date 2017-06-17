@@ -2,6 +2,7 @@
 #include "GLUtils.hpp"
 
 #include "../GPUcompute/GeomOptimize.hpp"
+#include "../CurveLib/RandomCurve.hpp"
 
 #include <sstream>
 
@@ -29,8 +30,11 @@ bool CMyApp::Init()
 	std::vector<GeomOptimize::Result> res = opt.optimize2D3("curvatureD", vec);
 	BezierCurve optCurve = opt.createResultCurve(vec[0], res[0]);
 
+  Curve::Ptr randomCurve = RandomCurve(5,3);
+
 	//Curve& c = optCurve;
-	Curve& c = ExampleHandler::get(3);
+	//Curve& c = ExampleHandler::get(3);
+  Curve& c = *randomCurve;
 
 	CurveRenderer ren(c);
 	ren.genBufferTesselation(N, 0, 1);

@@ -5,10 +5,13 @@
 
 #include <math.h>
 #include <string>
+#include <memory>
 
 class Curve
 {
 public:
+  typedef std::shared_ptr<Curve> Ptr;
+
 	virtual ~Curve(){}
 
 	virtual glm::dvec3 f(double t) = 0;

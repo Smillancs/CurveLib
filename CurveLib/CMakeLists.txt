@@ -16,6 +16,8 @@ GeomInvariant.cpp
 Utils.hpp
 Examples.hpp
 Examples.cpp
+RandomCurve.hpp
+RandomCurve.cpp
 )
 
 
