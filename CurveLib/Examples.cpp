@@ -8,6 +8,18 @@ bool ExampleHandler::ready = false;
 std::vector<Curve::Ptr> ExampleHandler::examples;
 Curve::Ptr ExampleHandler::random;
 
+Curve::Ptr ExampleHandler::getP(int i)
+{
+	if(!ready)
+	{
+		generate();
+	}
+  if(i == -1)
+  {
+    return random;
+  }
+	return examples[i];
+}
 Curve& ExampleHandler::get(int i)
 {
 	if(!ready)

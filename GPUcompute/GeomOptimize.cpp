@@ -60,7 +60,7 @@ GeomOptimize::GeomOptimize()
 	program.LinkProgram();
 }
 
-BezierCurve GeomOptimize::createResultCurve(const GeomOptimize::Input2D3& input, const GeomOptimize::Result& res)
+Curve::Ptr GeomOptimize::createResultCurve(const GeomOptimize::Input2D3& input, const GeomOptimize::Result& res)
 {
 
 	std::vector<glm::vec3> cps;
@@ -68,6 +68,5 @@ BezierCurve GeomOptimize::createResultCurve(const GeomOptimize::Input2D3& input,
 	cps.push_back(glm::vec3(input.p0 + (res.t0 * glm::rotate(input.p1 - input.p0, input.alpha)) / 3.f, 0));
 	cps.push_back(glm::vec3(input.p1 - (res.t1 * glm::rotate(input.p1 - input.p0, input.beta)) / 3.f, 0));
 	cps.push_back(glm::vec3(input.p1, 0));
-	BezierCurve bez(cps);
-	return bez;
+	return Curve::Ptr(new BezierCurve(cps));
 }

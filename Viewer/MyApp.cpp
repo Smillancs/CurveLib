@@ -19,6 +19,7 @@ CMyApp::~CMyApp(void)
 bool CMyApp::Init()
 {
 	glClearColor(1.0, 1.0, 1.0, 1.0);
+  glLineWidth(2.0);
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -28,13 +29,13 @@ bool CMyApp::Init()
 	std::vector<GeomOptimize::Input2D3> vec = { {glm::vec2(0,0),glm::vec2(1,0),1,-1} };
 	GeomOptimize opt;
 	std::vector<GeomOptimize::Result> res = opt.optimize2D3("curvatureD", vec);
-	BezierCurve optCurve = opt.createResultCurve(vec[0], res[0]);
+	Curve::Ptr optCurve = opt.createResultCurve(vec[0], res[0]);
 
   Curve::Ptr randomCurve = RandomCurve(5,3);
 
-	//Curve& c = optCurve;
-	//Curve& c = ExampleHandler::get(3);
-  Curve& c = *randomCurve;
+	//Curve::Ptr c = optCurve;
+	//Curve::Ptr c = ExampleHandler::getP(3);
+  Curve::Ptr c = randomCurve;
 
 	CurveRenderer ren(c);
 	ren.genBufferTesselation(N, 0, 1);
@@ -64,9 +65,9 @@ bool CMyApp::Init()
 		return false;
 	}
 
-	BezierCurve * bez = (BezierCurve *)&ExampleHandler::get(3);
-	CurveRenderer ren3(*bez);
-	auto cp = bez->GetGlmControlPoints();
+	Curve::Ptr bez = ExampleHandler::getP(3);
+	CurveRenderer ren3(bez);
+	auto cp = std::dynamic_pointer_cast<BezierCurve>(bez)->GetGlmControlPoints();
 	ren3.genBufferCps(cp);
 	m_vbBez = ren3.getBuffer();
 	vertsInPatch = cp.size();

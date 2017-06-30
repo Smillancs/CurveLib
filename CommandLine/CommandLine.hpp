@@ -5,6 +5,7 @@
 #include "../CurveLib/GeomInvariant.hpp"
 #include "../CurveLib/SimpleCurves.hpp"
 #include "../CurveLib/bezierCurve.h"
+#include "../CurveLib/RandomCurve.hpp"
 
 #include "../GPUcompute/GeomOptimize.hpp"
 
@@ -91,6 +92,7 @@ bool CommandLine::curveProcess(std::stringstream& cmd)
   {
     activeCurve = -1;
     std::cout << "Curve #-1 (random curve): " << ExampleHandler::get(activeCurve).about() << std::endl;
+    getUniformSamples1(ExampleHandler::getP(activeCurve),3);
   }
   else if(cmd1 == "newrandom")
   {
@@ -265,7 +267,7 @@ bool CommandLine::runTest(std::stringstream& cmd)
 		auto start = std::chrono::high_resolution_clock::now();
 		std::vector<GeomOptimize::Result> res = opt.optimize2D3(target, vec, dump);
 		auto end = std::chrono::high_resolution_clock::now();
-		BezierCurve optCurve = opt.createResultCurve(vec[0], res[0]);
+		Curve::Ptr optCurve = opt.createResultCurve(vec[0], res[0]);
 
 		std::cerr << "Single optimization by " << target << " done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
 			<< " milliseconds, with results (" << res[0].t0 << "; " << res[0].t1 << ") generating a curve with norm " << res[0].norm << std::endl;

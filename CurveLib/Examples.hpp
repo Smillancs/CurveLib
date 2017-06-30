@@ -12,6 +12,7 @@ class ExampleHandler
 	static bool ready;
 
 public:
+  static Curve::Ptr getP(int i);
 	static Curve& get(int i);
 
 	static size_t size();

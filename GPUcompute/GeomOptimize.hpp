@@ -30,7 +30,7 @@ public:
 
 	GeomOptimize();
 
-	BezierCurve createResultCurve(const Input2D3& input, const Result& res);
+	Curve::Ptr createResultCurve(const Input2D3& input, const Result& res);
 
 protected:
 	gShaderProgram program;

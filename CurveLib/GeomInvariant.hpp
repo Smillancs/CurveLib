@@ -12,7 +12,7 @@ namespace GeomInv
 	double K(Curve& c, double t);
 	double dK(Curve& c, double t);
 	double ddK(Curve& c, double t);
-	
+
 	double T(Curve& c, double t);
 	double dT(Curve& c, double t);
 

@@ -18,6 +18,8 @@ Examples.hpp
 Examples.cpp
 RandomCurve.hpp
 RandomCurve.cpp
+Reconstruction.hpp
+MathFunctions.hpp
 )
 
 
