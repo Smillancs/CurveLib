@@ -92,7 +92,6 @@ bool CommandLine::curveProcess(std::stringstream& cmd)
   {
     activeCurve = -1;
     std::cout << "Curve #-1 (random curve): " << ExampleHandler::get(activeCurve).about() << std::endl;
-    getUniformSamples1(ExampleHandler::getP(activeCurve),3);
   }
   else if(cmd1 == "newrandom")
   {
