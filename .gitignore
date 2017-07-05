@@ -3,6 +3,7 @@ build/
 eigen/
 cmake/
 OGLPack/include/
+3rdparty/
 
 # Compiled Object files
 *.slo
