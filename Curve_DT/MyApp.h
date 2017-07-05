@@ -21,6 +21,9 @@
 #include "../CurveLib/bezierCurve.h"
 #include "CurveRenderer.h"
 
+#include "Font/FontManager.h"
+#include "Font/Glyph.h"
+
 class CMyApp
 {
 public:
@@ -57,6 +60,9 @@ private:
 	CurveRenderer* generator;
 
 	GLuint fb, colorBuffer, pointBuffer;
+	
+	FontManager f;
+	void SetUpDummyFont();
 
 protected:
 	SDL_Window* win;

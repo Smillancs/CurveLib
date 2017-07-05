@@ -1,4 +1,4 @@
-#include "MyApp.h"
+ï»¿#include "MyApp.h"
 #include "GLUtils.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -19,6 +19,14 @@ CMyApp::~CMyApp(void)
 
 }
 
+
+void CMyApp::SetUpDummyFont()
+{
+	f.loadFont("../../3rdparty/NotoSansDevanagari-hinted/NotoSansDevanagari-Regular.ttf", "NotoSansDevanagari-Regular");
+	f.getFont("NotoSansDevanagari-Regular").setCharSize(32);
+
+	Glyph bez = f.getFont("NotoSansDevanagari-Regular").getGlyph(L'à¤ªà¤¿');
+}
 
 bool CMyApp::Init()
 {
@@ -272,7 +280,7 @@ void CMyApp::Run()
 	if (!Init())
 	{
 		SDL_DestroyWindow(win);
-		std::cout << "[app.Init] Az alkalmazás inicializálása közben hibatörtént!" << std::endl;
+		std::cout << "[app.Init] Az alkalmazÃ¡s inicializÃ¡lÃ¡sa kÃ¶zben hibatÃ¶rtÃ©nt!" << std::endl;
 		exit(1);
 	}
 	bool quit = false;
@@ -333,7 +341,7 @@ void CMyApp::initGraphics()
 {
 	if (SDL_Init(SDL_INIT_VIDEO) == -1)
 	{
-		std::cout << "[SDL indítása]Hiba az SDL inicializálása közben: " << SDL_GetError() << std::endl;
+		std::cout << "[SDL indÃ­tÃ¡sa]Hiba az SDL inicializÃ¡lÃ¡sa kÃ¶zben: " << SDL_GetError() << std::endl;
 		exit(1);
 	}
 
@@ -353,14 +361,14 @@ void CMyApp::initGraphics()
 
 	if (win == 0)
 	{
-		std::cout << "[Ablak létrehozása]Hiba az SDL inicializálása közben: " << SDL_GetError() << std::endl;
+		std::cout << "[Ablak lÃ©trehozÃ¡sa]Hiba az SDL inicializÃ¡lÃ¡sa kÃ¶zben: " << SDL_GetError() << std::endl;
 		exit(1);
 	}
 
 	context = SDL_GL_CreateContext(win);
 	if (context == 0)
 	{
-		std::cout << "[OGL context létrehozása]Hiba az SDL inicializálása közben: " << SDL_GetError() << std::endl;
+		std::cout << "[OGL context lÃ©trehozÃ¡sa]Hiba az SDL inicializÃ¡lÃ¡sa kÃ¶zben: " << SDL_GetError() << std::endl;
 		exit(1);
 	}
 
@@ -369,7 +377,7 @@ void CMyApp::initGraphics()
 	GLenum error = glewInit();
 	if (error != GLEW_OK)
 	{
-		std::cout << "[GLEW] Hiba az inicializálás során!" << std::endl;
+		std::cout << "[GLEW] Hiba az inicializÃ¡lÃ¡s sorÃ¡n!" << std::endl;
 		exit(1);
 	}
 
@@ -383,7 +391,7 @@ void CMyApp::initGraphics()
 		SDL_GL_DeleteContext(context);
 		SDL_DestroyWindow(win);
 
-		std::cout << "[OGL context létrehozása] Nem sikerült létrehozni az OpenGL context-et! Lehet, hogy az SDL_GL_SetAttribute(...) hívásoknál az egyik beállítás helytelen." << std::endl;
+		std::cout << "[OGL context lÃ©trehozÃ¡sa] Nem sikerÃ¼lt lÃ©trehozni az OpenGL context-et! Lehet, hogy az SDL_GL_SetAttribute(...) hÃ­vÃ¡soknÃ¡l az egyik beÃ¡llÃ­tÃ¡s helytelen." << std::endl;
 
 		exit(1);
 	}
