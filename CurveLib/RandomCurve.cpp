@@ -3,8 +3,8 @@
 #include <cstdlib>
 #include <algorithm>
 #include <iostream>
-#include "../CurveLib/all_incl.h"
-;
+#include "MathFunctions.hpp"
+
 
 std::vector<double> randomCoeffList(int n)
 {
@@ -13,14 +13,14 @@ std::vector<double> randomCoeffList(int n)
   return v;
 }
 
-double transformationCoeff(int n, int j, int k)
+constexpr double transformationCoeff(int n, int j, int k)
 {
   double m = 0;
   for(int i=std::max(0,j+k-n); i<=std::min(j,k); ++i)
   {
-    m += ((k+i)&1?-1:1)*binomial(k,i)*binomial(k,i)*binomial(n-k,j-i);
+    m += ((k+i)&1?-1:1)*binomialCoeff(k,i)*binomialCoeff(k,i)*binomialCoeff(n-k,j-i);
   }
-  m /= binomial(n,j);
+  m /= binomialCoeff(n,j);
   return m;
 }
 
