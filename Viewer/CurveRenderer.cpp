@@ -1,5 +1,6 @@
 #include "CurveRenderer.h"
 
+#include "../CurveLib/bezierCurve.h"
 #include "../CurveLib/GeomInvariant.hpp"
 
 void CurveRenderer::genBufferTesselation(const unsigned N, const float a, const float b)
@@ -67,7 +68,7 @@ void CurveRenderer::genBufferNormal(const unsigned N, const float a, const float
 	float l = b - a;
 	for (int i = 0; i <= N; ++i)
 	{
-        float t = a + l * i / (float)N;
+    float t = a + l * i / (float)N;
 		vb.AddData(0, glm::vec3(c->f(t)));
 		vb.AddData(1, glm::vec3(GeomInv::e(*c, t)));
 		vb.AddData(2, glm::vec3(GeomInv::n(*c, t)));
@@ -79,13 +80,16 @@ void CurveRenderer::genBufferNormal(const unsigned N, const float a, const float
 	vb.InitBuffers();
 }
 
-void CurveRenderer::genBufferCps(const std::vector<glm::vec3>& cp)
+int CurveRenderer::genBufferCps()
 {
+  std::shared_ptr<BezierCurve> bez = std::dynamic_pointer_cast<BezierCurve>(c);
+  auto cp = bez->GetGlmControlPoints();
 	vb.AddAttribute(0, 3); // position
 	for (const auto &i : cp)
 	{
 		vb.AddData(0,i);
 	}
+  return cp.size();
 }
 
 gVertexBuffer CurveRenderer::getBuffer()

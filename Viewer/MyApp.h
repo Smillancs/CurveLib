@@ -28,6 +28,7 @@ public:
 	~CMyApp(void);
 
 	bool Init();
+  void InitCurveRenderer(Curve::Ptr c, bool gputesselation);
 	void Clean();
 
 	void Update();
@@ -51,17 +52,23 @@ public:
 protected:
 	SDL_Window* win;
 	SDL_GLContext context;
-	
+
 	gCamera			m_camera;
 	gShaderProgram	m_program_curve;
 	gShaderProgram	m_program_tess;
 	gShaderProgram	m_program_bez;
 	gShaderProgram	m_program_basic;
 	gVertexBuffer	m_vb;
-	gVertexBuffer	m_vbT, m_vbBez;
-	gVertexBuffer   axes;
-	
-	bool tesselated = false;
-	bool drawBezier = true;
-};
+	gVertexBuffer axes;
 
+  Curve::Ptr activeCurve;
+  int curveSelect = -1;
+
+  Curve::Ptr randomCurve;
+
+  Curve::Ptr optCurve;
+
+	bool tesselated = true;
+
+  bool change = false;
+};

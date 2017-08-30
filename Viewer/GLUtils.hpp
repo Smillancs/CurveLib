@@ -12,7 +12,7 @@
 
 /*
 
-Az http://www.opengl-tutorial.org/ oldal alapján.
+Az http://www.opengl-tutorial.org/ oldal alapjï¿½n.
 
 */
 GLuint loadShader(GLenum _shaderType, const char* _fileName)
@@ -23,7 +23,7 @@ GLuint loadShader(GLenum _shaderType, const char* _fileName)
 	// ha nem sikerult hibauzenet es -1 visszaadasa
 	if ( loadedShader == 0 )
 	{
-		fprintf(stderr, "Hiba a %s shader inicializálásakor (glCreateShader)!", _fileName);
+		fprintf(stderr, "Hiba a %s shader inicializï¿½lï¿½sakor (glCreateShader)!", _fileName);
 		return 0;
 	}
 
@@ -35,7 +35,7 @@ GLuint loadShader(GLenum _shaderType, const char* _fileName)
 
 	if ( !shaderStream.is_open() )
 	{
-		fprintf(stderr, "Hiba a %s shader fájl betöltésekor!", _fileName);
+		fprintf(stderr, "Hiba a %s shader fï¿½jl betï¿½ltï¿½sekor!", _fileName);
 		return 0;
 	}
 
@@ -127,7 +127,7 @@ GLuint TextureFromFile(const char* filename)
 
 	if ( loaded_img == 0 )
 	{
-		std::cout << "[TextureFromFile] Hiba a kép betöltése közben: " << filename << std::endl;
+		std::cout << "[TextureFromFile] Hiba a kï¿½p betï¿½ltï¿½se kï¿½zben: " << filename << std::endl;
 		return 0;
 	}
 
@@ -165,7 +165,7 @@ void TextureFromFileAttach(const char* filename, GLuint role)
 
 	if ( loaded_img == 0 )
 	{
-		std::cout << "[TextureFromFile] Hiba a kép betöltése közben: " << filename << std::endl;
+		std::cout << "[TextureFromFile] Hiba a kï¿½p betï¿½ltï¿½se kï¿½zben: " << filename << std::endl;
 		return;
 	}
 

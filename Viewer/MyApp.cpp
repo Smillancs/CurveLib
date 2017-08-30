@@ -4,6 +4,9 @@
 #include "../GPUcompute/GeomOptimize.hpp"
 #include "../CurveLib/RandomCurve.hpp"
 
+#include "../Imgui/imgui.h"
+#include "imgui_impl_sdl_gl3.h"
+
 #include <sstream>
 
 CMyApp::CMyApp()
@@ -29,21 +32,18 @@ bool CMyApp::Init()
 	std::vector<GeomOptimize::Input2D3> vec = { {glm::vec2(0,0),glm::vec2(1,0),1,-1} };
 	GeomOptimize opt;
 	std::vector<GeomOptimize::Result> res = opt.optimize2D3("curvatureD", vec);
-	Curve::Ptr optCurve = opt.createResultCurve(vec[0], res[0]);
+	optCurve = opt.createResultCurve(vec[0], res[0]);
 
-  Curve::Ptr randomCurve = RandomCurve(5,3);
+  randomCurve = RandomCurve(5,3);
 
-	//Curve::Ptr c = optCurve;
-	//Curve::Ptr c = ExampleHandler::getP(3);
-  Curve::Ptr c = randomCurve;
+	/*Curve::Ptr c = optCurve;
+	Curve::Ptr c = ExampleHandler::getP(3);
+  Curve::Ptr c = randomCurve;*/
 
-	CurveRenderer ren(c);
-	ren.genBufferTesselation(N, 0, 1);
-	m_vbT = ren.getBuffer();
-
-	CurveRenderer ren2(c);
-	ren2.genBufferNormal(N, 0, 1);
-	m_vb = ren2.getBuffer();
+  InitCurveRenderer(randomCurve, true);
+  activeCurve = randomCurve;
+  /*InitCurveRenderer(ExampleHandler::getP(3), true);
+  activeCurve = ExampleHandler::getP(3);*/
 
 	m_program_curve.AttachShader(GL_VERTEX_SHADER, "../Assets/shader_curve.vert");
 	m_program_curve.AttachShader(GL_FRAGMENT_SHADER, "../Assets/shader_curve.frag");
@@ -64,13 +64,6 @@ bool CMyApp::Init()
 	{
 		return false;
 	}
-
-	Curve::Ptr bez = ExampleHandler::getP(3);
-	CurveRenderer ren3(bez);
-	auto cp = std::dynamic_pointer_cast<BezierCurve>(bez)->GetGlmControlPoints();
-	ren3.genBufferCps(cp);
-	m_vbBez = ren3.getBuffer();
-	vertsInPatch = cp.size();
 
 	m_program_bez.AttachShader(GL_VERTEX_SHADER, "../Assets/shader_tess_adv.vert");
 	m_program_bez.AttachShader(GL_TESS_CONTROL_SHADER, "../Assets/shader_tess_adv.tcs");
@@ -94,9 +87,29 @@ bool CMyApp::Init()
 		return false;
 	}
 
-	m_camera.SetProj(45.0f, 640.0f/480.0f, 0.01f, 1000.0f);
+	m_camera.SetProj(45.0f, 4.0f/3.0f, 0.01f, 1000.0f);
 
 	return true;
+}
+
+void CMyApp::InitCurveRenderer(Curve::Ptr c, bool gputesselation)
+{
+  m_vb.Clean();
+  CurveRenderer ren(c);
+  if(gputesselation)
+  {
+    vertsInPatch = ren.genBufferCps();
+    m_vb = ren.getBuffer();
+    m_vb.InitBuffers();
+    activeCurve = c;
+  }
+  else
+  {
+    ren.genBufferNormal(N, 0, 1);
+    m_vb = ren.getBuffer();
+    m_vb.InitBuffers();
+    activeCurve = c;
+  }
 }
 
 
@@ -124,6 +137,14 @@ void CMyApp::Update()
 	m_camera.Update(delta_time);
 
 	last_time = SDL_GetTicks();
+
+  if(change)
+  {
+    if(curveSelect == 0) activeCurve = optCurve;
+    else activeCurve = ExampleHandler::getP(curveSelect);
+    change = false;
+    InitCurveRenderer(activeCurve, tesselated);
+  }
 }
 
 
@@ -134,24 +155,19 @@ void CMyApp::Render()
 
 	if (tesselated)
 	{
-		auto & currentProgram = drawBezier ? m_program_bez : m_program_tess;
+		auto & currentProgram = m_program_bez;
 		currentProgram.On();
 		currentProgram.SetUniform("VP", vp);
-		if (drawBezier)
-		{
-			currentProgram.SetUniform( "pointNum", vertsInPatch);
-			m_vbBez.On();
-			m_vbBez.SetPatchVertices(vertsInPatch);
-			m_vbBez.Draw(GL_PATCHES, 0, vertsInPatch);
-			m_vbBez.Off();
-		}
-		else
-		{
-			m_vbT.On();
-			m_vbT.SetPatchVertices(2);
-			m_vbT.Draw(GL_PATCHES, 0, 2*(N+1));
-			m_vbT.Off();
-		}
+		currentProgram.SetUniform("point_num", vertsInPatch);
+    std::shared_ptr<BezierCurve> bez = std::dynamic_pointer_cast<BezierCurve>(activeCurve);
+    auto cp = bez->GetGlmControlPoints();
+    glUniform3fv(glGetUniformLocation(currentProgram.ID(), "pointData"),
+    		cp.size(),
+    		&cp[0][0]);
+		m_vb.On();
+		m_vb.SetPatchVertices(vertsInPatch);
+		m_vb.Draw(GL_PATCHES, 0, vertsInPatch);
+		m_vb.Off();
 		currentProgram.Off();
 	}
 	else
@@ -175,6 +191,47 @@ void CMyApp::Render()
 	axes.Off();
 
 	m_program_basic.Off();
+
+
+  ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
+  ImGui::SetNextWindowSize(ImVec2(300,300), ImGuiSetCond_FirstUseEver);
+	ImGui::Begin("Curve operations");
+  if (ImGui::CollapsingHeader("Select curve"))
+  {
+      ImGui::TextWrapped("Select curve from prepared examples:");
+
+      ImGui::RadioButton("Randomized curve: ", &curveSelect, -1);
+      ImGui::RadioButton("Curve #1: ", &curveSelect, 3);
+      ImGui::RadioButton("Curve #2: ", &curveSelect, 4);
+      ImGui::RadioButton("Curve from simple optimization: ", &curveSelect, 0);
+
+      if(ImGui::Button("Go!", ImVec2(0,0)))
+      {
+        change = true;
+      }
+  }
+  if (ImGui::CollapsingHeader("Select drawing method"))
+  {
+      bool b = tesselated;
+      ImGui::Checkbox("GPU tesselation", &tesselated);
+      change |= (b != tesselated);
+  }
+  if (ImGui::CollapsingHeader("Generate new random curve"))
+  {
+      static char str0[5] = "5";
+      ImGui::InputText("Degree", str0, 5);
+      static int item = 1;
+      ImGui::Combo("Dimension", &item, "2\0""3\0\0");
+      if(ImGui::Button("Generate", ImVec2(0,0)))
+      {
+        ExampleHandler::newRandom(atoi(str0), item+2);
+        change = true;
+      }
+  }
+	ImGui::End();
+
+	/*ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
+	ImGui::ShowTestWindow();*/
 
 }
 
@@ -226,47 +283,61 @@ void CMyApp::Run()
 	{
 		while (SDL_PollEvent(&ev))
 		{
+			ImGui_ImplSdlGL3_ProcessEvent(&ev);
+			bool is_mouse_captured = ImGui::GetIO().WantCaptureMouse;
+			bool is_keyboard_captured = ImGui::GetIO().WantCaptureKeyboard;
 			switch (ev.type)
-			{
-			case SDL_QUIT:
-				quit = true;
-				break;
-			case SDL_KEYDOWN:
-				if (ev.key.keysym.sym == SDLK_ESCAPE)
-					quit = true;
-				KeyboardDown(ev.key);
-				break;
-			case SDL_KEYUP:
-				KeyboardUp(ev.key);
-				break;
-			case SDL_MOUSEBUTTONDOWN:
-				MouseDown(ev.button);
-				break;
-			case SDL_MOUSEBUTTONUP:
-				MouseUp(ev.button);
-				break;
-			case SDL_MOUSEWHEEL:
-				MouseWheel(ev.wheel);
-				break;
-			case SDL_MOUSEMOTION:
-				MouseMove(ev.motion);
-				break;
-			case SDL_WINDOWEVENT:
-				if (ev.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
 				{
-					Resize(ev.window.data1, ev.window.data2);
+				case SDL_QUIT:
+					quit = true;
+					break;
+				case SDL_KEYDOWN:
+					if (ev.key.keysym.sym == SDLK_ESCAPE)
+						quit = true;
+					if (!is_keyboard_captured)
+						KeyboardDown(ev.key);
+					break;
+				case SDL_KEYUP:
+					if (!is_keyboard_captured)
+						KeyboardUp(ev.key);
+					break;
+				case SDL_MOUSEBUTTONDOWN:
+					if (!is_mouse_captured)
+						MouseDown(ev.button);
+					break;
+				case SDL_MOUSEBUTTONUP:
+					if (!is_mouse_captured)
+						MouseUp(ev.button);
+					break;
+				case SDL_MOUSEWHEEL:
+					if (!is_mouse_captured)
+						MouseWheel(ev.wheel);
+					break;
+				case SDL_MOUSEMOTION:
+					if (!is_mouse_captured)
+						MouseMove(ev.motion);
+					break;
+				case SDL_WINDOWEVENT:
+					if (ev.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+					{
+						Resize(ev.window.data1, ev.window.data2);
+					}
+					break;
 				}
-				break;
-			}
 		}
 
-		Update();
+    ImGui_ImplSdlGL3_NewFrame(win);
+
+    Update();
 		Render();
+		ImGui::Render();
 
 		SDL_GL_SwapWindow(win);
 	}
 
 	Clean();
+
+	ImGui_ImplSdlGL3_Shutdown();
 
 	SDL_GL_DeleteContext(context);
 	SDL_DestroyWindow(win);
@@ -294,13 +365,15 @@ void CMyApp::initGraphics()
 
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-	win = SDL_CreateWindow("Hello SDL&OpenGL!",	100, 100, 640, 480,	SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+	win = SDL_CreateWindow("Hello SDL&OpenGL!",	100, 100, 1024, 768,	SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
 	if (win == 0)
 	{
 		std::cout << "[Ablak l�trehoz�sa]Hiba az SDL inicializ�l�sa k�zben: " << SDL_GetError() << std::endl;
 		exit(1);
 	}
+
+	ImGui_ImplSdlGL3_Init(win);
 
 	context = SDL_GL_CreateContext(win);
 	if (context == 0)
