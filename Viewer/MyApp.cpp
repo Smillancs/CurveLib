@@ -2,6 +2,7 @@
 #include "GLUtils.hpp"
 
 #include "../GPUcompute/GeomOptimize.hpp"
+#include "../GPUcompute/Reconstruction.hpp"
 #include "../CurveLib/RandomCurve.hpp"
 
 #include "../Imgui/imgui.h"
@@ -145,6 +146,25 @@ void CMyApp::Update()
     change = false;
     InitCurveRenderer(activeCurve, tesselated);
   }
+
+  if(makeOpt)
+  {
+    std::vector<Reconstruction<1>::Input> vec = {getPointData<1>(activeCurve,0), getPointData<1>(activeCurve,1)};
+		Reconstruction<1> opt;
+		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
+
+		std::vector<Reconstruction<1>::Result> res = opt.optimize("curvatureD", vec, dump);
+
+		Curve::Ptr optCurve = opt.createResultCurve(res[0]);
+
+    std::cerr << optCurve->about() << std::endl;
+
+    makeOpt = false;
+
+    activeCurve = optCurve;
+
+    InitCurveRenderer(optCurve, tesselated);
+  }
 }
 
 
@@ -226,6 +246,13 @@ void CMyApp::Render()
       {
         ExampleHandler::newRandom(atoi(str0), item+2);
         change = true;
+      }
+  }
+  if (ImGui::CollapsingHeader("Optimize current curve"))
+  {
+      if(ImGui::Button("Optimize (deg3)", ImVec2(0,0)))
+      {
+        makeOpt = true;
       }
   }
 	ImGui::End();

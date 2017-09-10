@@ -71,4 +71,7 @@ protected:
 	bool tesselated = true;
 
   bool change = false;
+
+  bool opt = false;
+  bool makeOpt = false;
 };

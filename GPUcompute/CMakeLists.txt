@@ -5,6 +5,7 @@ gBuffer.h
 gBuffer.cpp
 GeomOptimize.hpp
 GeomOptimize.cpp
+Reconstruction.hpp
 )
 
 

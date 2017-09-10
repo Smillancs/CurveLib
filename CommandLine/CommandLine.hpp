@@ -8,6 +8,7 @@
 #include "../CurveLib/RandomCurve.hpp"
 
 #include "../GPUcompute/GeomOptimize.hpp"
+#include "../GPUcompute/Reconstruction.hpp"
 
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -260,7 +261,7 @@ bool CommandLine::runTest(std::stringstream& cmd)
     cmd >> target;
     if(target=="") target = "curvature";
 
-		std::vector<GeomOptimize::Input2D3> vec = {{glm::vec2(0,0),glm::vec2(1,0),1,-1}};
+		/*std::vector<GeomOptimize::Input2D3> vec = {{glm::vec2(0,0),glm::vec2(1,0),1,-1}};
 		GeomOptimize opt;
 		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
 
@@ -273,7 +274,27 @@ bool CommandLine::runTest(std::stringstream& cmd)
 			<< " milliseconds, with results (" << res[0].t0 << "; " << res[0].t1 << ") generating a curve with norm " << res[0].norm << std::endl;
 
 		assert_double_equal((double)(*dump)[0], 42.0); // dummy assert for buffer binding problems
-		assert_(target != "curvatureD" || res[0].norm <= 1.0f); // Depends on initial configuration, but with the current it can be done.
+		assert_(target != "curvatureD" || res[0].norm <= 1.0f); // Depends on initial configuration, but with the current it can be done.*/
+
+
+
+		std::vector<Reconstruction<1>::Input> vec = {getPointData<1>(ExampleHandler::getP(3),0), getPointData<1>(ExampleHandler::getP(3),1)};
+		Reconstruction<1> opt;
+		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
+
+		auto start = std::chrono::high_resolution_clock::now();
+		std::vector<Reconstruction<1>::Result> res = opt.optimize(target, vec, dump);
+		auto end = std::chrono::high_resolution_clock::now();
+		Curve::Ptr optCurve = opt.createResultCurve(res[0]);
+
+    /*std::cerr << "Debug: " << std::endl;
+      for(int i=0;i<12;++i) std::cerr << (*dump)[i] << std::endl;*/
+
+		std::cerr << "Single optimization by " << target << " done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+			<< " milliseconds, with resulting curve: " << optCurve->about() << " , with norm " << res[0].second << std::endl;
+
+		assert_double_equal((double)(*dump)[0], 42.0); // dummy assert for buffer binding problems
+		//assert_(target != "curvatureD" || res[0].norm <= 1.0f); // Depends on initial configuration, but with the current it can be done.
 	}
 	else if("help" == option)
 	{
