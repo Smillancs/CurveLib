@@ -291,7 +291,7 @@ bool CommandLine::runTest(std::stringstream& cmd)
       for(int i=0;i<12;++i) std::cerr << (*dump)[i] << std::endl;*/
 
 		std::cerr << "Single optimization by " << target << " done in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
-			<< " milliseconds, with resulting curve: " << optCurve->about() << " , with norm " << res[0].second << std::endl;
+			<< " milliseconds, with resulting curve: " << optCurve->about() << " , with norm " << res[0].second[0] << std::endl;
 
 		assert_double_equal((double)(*dump)[0], 42.0); // dummy assert for buffer binding problems
 		//assert_(target != "curvatureD" || res[0].norm <= 1.0f); // Depends on initial configuration, but with the current it can be done.
