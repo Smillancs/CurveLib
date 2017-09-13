@@ -29,6 +29,7 @@ public:
 
 	bool Init();
   void InitCurveRenderer(Curve::Ptr c, bool gputesselation);
+  void InitCurveRenderer(std::vector<Curve::Ptr> c, bool gputesselation);
 	void Clean();
 
 	void Update();
@@ -48,7 +49,6 @@ public:
 	void addCommonShaderAttrib(gShaderProgram&);
 
 	const static int N = 50;
-	int vertsInPatch = 2;
 protected:
 	SDL_Window* win;
 	SDL_GLContext context;
@@ -58,11 +58,15 @@ protected:
 	gShaderProgram	m_program_tess;
 	gShaderProgram	m_program_bez;
 	gShaderProgram	m_program_basic;
-	gVertexBuffer	m_vb;
 	gVertexBuffer axes;
 
+  std::vector<Curve::Ptr> activeCurves;
   Curve::Ptr activeCurve;
   int curveSelect = -1;
+
+	std::vector<gVertexBuffer>	m_vb;
+
+  std::vector<int> vertsInPatch = {2};
 
   Curve::Ptr randomCurve;
 
@@ -74,4 +78,6 @@ protected:
 
   bool opt = false;
   bool makeOpt = false;
+
+  int segments = 1;
 };

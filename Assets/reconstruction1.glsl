@@ -110,7 +110,6 @@ vec3[point_num] calculateControlPoints(vec3 start[continuity+1], vec3 end[contin
   vec3 controlPoints[point_num];
   for(int i=0;i<4;++i)
     controlPoints[i] = vec3(controlpoints[3*i],controlpoints[3*i+1],controlpoints[3*i+2]);
-  //for(int i=0;i<12;++i) dump.data[i] = controlPoints[i/3][i%3];
   return controlPoints;
 }
 
@@ -129,9 +128,11 @@ void main()
 	{
 		x1_0 = 1.f;
 		x1_1 = 1.f;
-    for(int i=0;i<3;++i) dump.data[3+i] = inBuf.data[2*id].e[i];
+    for(int i=0;i<3;++i) dump.data[6*id+i] = inBuf.data[2*id].p[i];
+    for(int i=0;i<3;++i) dump.data[6*id+3+i] = inBuf.data[2*id+1].p[i];
 	}
 	float eps = 1e-3;
+  float min_dist = length(abs(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz)) / 1000;
   barrier();
 
 	for(int i=0;i<ITERATIONS;++i)
@@ -174,6 +175,9 @@ void main()
 			x1_0 -= step[0];
 			x1_1 -= step[1];
 
+      if(x1_0 < min_dist) x1_0 = min_dist;
+      if(x1_1 < min_dist) x1_1 = min_dist;
+
 		}
     barrier();
 	}
@@ -194,10 +198,12 @@ void main()
 			if(positions[i].norm < positions[min].norm) min = i;
 		}
 
-    for(int j=0;j<point_num;++j)
-       outBuf.data[id].points[j] = positions[ITERATIONS].points[j];
-		outBuf.data[id].norm = positions[ITERATIONS].norm;
+    if(id==1) for(int i=0;i<12;++i) dump.data[i] = positions[min].points[i/3][i%3];
 
-		dump.data[0] = 42;
+    for(int j=0;j<point_num;++j)
+       outBuf.data[id].points[j] = positions[min].points[j];
+		outBuf.data[id].norm = positions[min].norm;
+
+		//dump.data[0] = 42;
 	}
 }

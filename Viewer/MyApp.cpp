@@ -95,24 +95,50 @@ bool CMyApp::Init()
 
 void CMyApp::InitCurveRenderer(Curve::Ptr c, bool gputesselation)
 {
-  m_vb.Clean();
+  m_vb.resize(1);
+  m_vb[0].Clean();
   CurveRenderer ren(c);
   if(gputesselation)
   {
-    vertsInPatch = ren.genBufferCps();
-    m_vb = ren.getBuffer();
-    m_vb.InitBuffers();
+    vertsInPatch.resize(1);
+    vertsInPatch[0] = ren.genBufferCps();
+    m_vb[0] = ren.getBuffer();
+    m_vb[0].InitBuffers();
     activeCurve = c;
   }
   else
   {
     ren.genBufferNormal(N, 0, 1);
-    m_vb = ren.getBuffer();
-    m_vb.InitBuffers();
+    m_vb[0] = ren.getBuffer();
+    m_vb[0].InitBuffers();
     activeCurve = c;
   }
 }
 
+void CMyApp::InitCurveRenderer(std::vector<Curve::Ptr> c, bool gputesselation)
+{
+  size_t n = c.size();
+  m_vb.resize(n);
+  vertsInPatch.resize(n);
+  for(size_t i=0;i<n;++i)
+  {
+    m_vb[i].Clean();
+    CurveRenderer ren(c[i]);
+    if(gputesselation)
+    {
+      vertsInPatch[i] = ren.genBufferCps();
+      m_vb[i] = ren.getBuffer();
+      m_vb[i].InitBuffers();
+    }
+    else
+    {
+      ren.genBufferNormal(N, 0, 1);
+      m_vb[i] = ren.getBuffer();
+      m_vb[i].InitBuffers();
+    }
+  }
+  activeCurves = c;
+}
 
 void CMyApp::addCommonShaderAttrib(gShaderProgram& program)
 {
@@ -145,25 +171,41 @@ void CMyApp::Update()
     else activeCurve = ExampleHandler::getP(curveSelect);
     change = false;
     InitCurveRenderer(activeCurve, tesselated);
+    activeCurves = {activeCurve};
   }
 
   if(makeOpt)
   {
-    std::vector<Reconstruction<1>::Input> vec = {getPointData<1>(activeCurve,0), getPointData<1>(activeCurve,1)};
+    std::vector<Reconstruction<1>::Input> vec = {getPointData<1>(activeCurve,0)};
+    for(float i = 1; i <= segments; ++i)
+    {
+      vec.push_back(getPointData<1>(activeCurve,i/(float)segments));
+      vec.push_back(getPointData<1>(activeCurve,i/(float)segments));
+    }
+    vec.pop_back();
 		Reconstruction<1> opt;
 		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
 
 		std::vector<Reconstruction<1>::Result> res = opt.optimize("curvatureD", vec, dump);
 
-		Curve::Ptr optCurve = opt.createResultCurve(res[0]);
 
-    std::cerr << optCurve->about() << std::endl;
+        std::cerr << "Debug: " << std::endl;
+          for(int i=0;i<12;++i) std::cerr << (*dump)[i] << std::endl;
+
+    activeCurves.clear();
+    for(size_t i=0;i<res.size();++i)
+		{
+      Curve::Ptr optCurve = opt.createResultCurve(res[i]);
+      std::cerr << optCurve->about() << std::endl;
+      activeCurves.push_back(optCurve);
+    }
+
 
     makeOpt = false;
 
-    activeCurve = optCurve;
+    //activeCurve = optCurve;
 
-    InitCurveRenderer(optCurve, tesselated);
+    InitCurveRenderer(activeCurves, tesselated);
   }
 }
 
@@ -178,16 +220,19 @@ void CMyApp::Render()
 		auto & currentProgram = m_program_bez;
 		currentProgram.On();
 		currentProgram.SetUniform("VP", vp);
-		currentProgram.SetUniform("point_num", vertsInPatch);
-    std::shared_ptr<BezierCurve> bez = std::dynamic_pointer_cast<BezierCurve>(activeCurve);
-    auto cp = bez->GetGlmControlPoints();
-    glUniform3fv(glGetUniformLocation(currentProgram.ID(), "pointData"),
-    		cp.size(),
-    		&cp[0][0]);
-		m_vb.On();
-		m_vb.SetPatchVertices(vertsInPatch);
-		m_vb.Draw(GL_PATCHES, 0, vertsInPatch);
-		m_vb.Off();
+    for(size_t i=0;i<m_vb.size();++i)
+    {
+  		currentProgram.SetUniform("point_num", vertsInPatch[i]);
+      std::shared_ptr<BezierCurve> bez = std::dynamic_pointer_cast<BezierCurve>(activeCurves.size() == 0 ? activeCurve : activeCurves[i]);
+      auto cp = bez->GetGlmControlPoints();
+      glUniform3fv(glGetUniformLocation(currentProgram.ID(), "pointData"),
+      		cp.size(),
+      		&cp[0][0]);
+  		m_vb[i].On();
+  		m_vb[i].SetPatchVertices(vertsInPatch[i]);
+  		m_vb[i].Draw(GL_PATCHES, 0, vertsInPatch[i]);
+  		m_vb[i].Off();
+    }
 		currentProgram.Off();
 	}
 	else
@@ -196,9 +241,12 @@ void CMyApp::Render()
 
 		m_program_curve.SetUniform( "VP", vp );
 
-		m_vb.On();
-		m_vb.Draw(GL_LINE_STRIP, 0, N+1);
-		m_vb.Off();
+    for(size_t i=0;i<m_vb.size();++i)
+    {
+  		m_vb[i].On();
+  		m_vb[i].Draw(GL_LINE_STRIP, 0, N+1);
+  		m_vb[i].Off();
+    }
 
 		m_program_curve.Off();
 	}
@@ -250,6 +298,9 @@ void CMyApp::Render()
   }
   if (ImGui::CollapsingHeader("Optimize current curve"))
   {
+      static char str0[5] = "1";
+      ImGui::InputText("Curve segments: ", str0, 5);
+      segments = atoi(str0);
       if(ImGui::Button("Optimize (deg3)", ImVec2(0,0)))
       {
         makeOpt = true;

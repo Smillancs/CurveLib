@@ -8,6 +8,7 @@ in block
 	vec3	patch_coords;
 	float	k;
 	float	t;
+  float v;
 } In;
 
 out vec4 fs_out_col;
@@ -24,5 +25,6 @@ void main()
 	}
 
 	vec2 pos = gl_FragCoord.xy;
-	fs_out_col = vec4(In.k, 5*In.t, -5*In.t, 1);
+	//fs_out_col = vec4(In.k, 5*In.t, -5*In.t, 1);
+  fs_out_col = vec4(In.v,0,0,1);
 }

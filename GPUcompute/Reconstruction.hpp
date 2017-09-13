@@ -61,6 +61,7 @@ ReconstructionData<N> getPointData(Curve::Ptr c, double t)
   if(N >= 1)
   {
     data.e = GeomInv::e(*c, t);
+    // TODO: compile-time if
     /*if(N >= 2)
     {
       data.n = GeomInv::n(*c, t);
@@ -86,7 +87,7 @@ class Reconstruction
 public:
 	using Input = ReconstructionData<continuity>;
 
-	using Result = std::pair<std::array<std::pair<glm::vec3,float>,(2*continuity+1)+1>, float>;
+	using Result = std::pair<std::array<std::pair<glm::vec3,float>,(2*continuity+1)+1>, std::array<float,4>>;
 
 	std::vector<Result> optimize(const std::string& targetFunction, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
 
