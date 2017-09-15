@@ -4,6 +4,7 @@
 #include "../GPUcompute/GeomOptimize.hpp"
 #include "../GPUcompute/Reconstruction.hpp"
 #include "../CurveLib/RandomCurve.hpp"
+#include "../CurveLib/Utils.hpp"
 
 #include "../Imgui/imgui.h"
 #include "imgui_impl_sdl_gl3.h"
@@ -198,6 +199,8 @@ void CMyApp::Update()
       Curve::Ptr optCurve = opt.createResultCurve(res[i]);
       std::cerr << optCurve->about() << std::endl;
       activeCurves.push_back(optCurve);
+
+      exportCurveData("curve.txt", optCurve, GeomInv::dK, 1000, i);
     }
 
 

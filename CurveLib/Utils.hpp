@@ -2,8 +2,11 @@
 
 #include <string>
 #include <sstream>
+#include <fstream>
 #include <cassert>
 #include "glm/gtx/string_cast.hpp"
+
+#include "Curve.hpp"
 
 class Exception : public std::exception
 {
@@ -57,3 +60,6 @@ inline bool assert_(bool statement)
 	if(!statement) throw(Exception("Assertion failed."));
 	return statement;
 }
+
+
+void exportCurveData(std::string filename, Curve::Ptr c, std::function<double(Curve&,double)> func, int n, int segmentNumber = 0);

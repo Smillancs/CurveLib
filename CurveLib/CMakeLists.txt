@@ -14,6 +14,7 @@ SimpleCurves.hpp
 GeomInvariant.hpp
 GeomInvariant.cpp
 Utils.hpp
+Utils.cpp
 Examples.hpp
 Examples.cpp
 RandomCurve.hpp
