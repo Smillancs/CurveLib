@@ -14,6 +14,7 @@ out block
 	vec3	col;
 	vec3	patch_coords;
 	float	k;
+  float dK;
 	float	t;
   float v;
 } Out;
@@ -34,6 +35,7 @@ void main()
 	Out.pos = bpos;
 	Out.patch_coords = gl_TessCoord.xyz;
 	Out.k = K(pointData, point_num, u);
+  Out.dK = dK(pointData, point_num, u);
 	Out.t = T(pointData, point_num, u);
 	Out.v = length(Diff(pointData, 1, u, point_num));
 }
