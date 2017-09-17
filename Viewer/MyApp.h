@@ -80,4 +80,7 @@ protected:
   bool makeOpt = false;
 
   int segments = 1;
+
+  bool ortho = false;
+  float zoom = 10.0f;
 };

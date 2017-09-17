@@ -216,7 +216,13 @@ void CMyApp::Update()
 void CMyApp::Render()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glm::mat4 vp = m_camera.GetViewProj();
+  glm::mat4 vp;
+  if(ortho)
+  {
+    vp = glm::ortho(-zoom,zoom,-zoom,zoom,1.0f,20.0f)*glm::lookAt(glm::vec3(0,0,10),glm::vec3(0),glm::vec3(0,1,0));
+  }
+  else
+    vp = m_camera.GetViewProj();
 
 	if (tesselated)
 	{
@@ -287,6 +293,12 @@ void CMyApp::Render()
       ImGui::Checkbox("GPU tesselation", &tesselated);
       change |= (b != tesselated);
   }
+  if (ImGui::CollapsingHeader("Camera settings"))
+  {
+      static int item = 0;
+      ImGui::Combo("Projection", &item, "Free perspective\0Ortographic to XY\0\0");
+      ortho = item == 1;
+  }
   if (ImGui::CollapsingHeader("Generate new random curve"))
   {
       static char str0[5] = "5";
@@ -341,6 +353,7 @@ void CMyApp::MouseUp(SDL_MouseButtonEvent& mouse)
 
 void CMyApp::MouseWheel(SDL_MouseWheelEvent& wheel)
 {
+  zoom -= wheel.y * 0.1f;
 }
 
 void CMyApp::Resize(int _w, int _h)
