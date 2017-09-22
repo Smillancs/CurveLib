@@ -78,6 +78,7 @@ protected:
 
   bool opt = false;
   bool makeOpt = false;
+  int optRank = 0;
 
   int segments = 1;
 

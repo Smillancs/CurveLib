@@ -107,6 +107,11 @@ namespace GeomInv{
 
 	glm::dvec3 n(Curve& c, double t){ return glm::cross(b(c, t), e(c, t)); }
 
+  double v(Curve& c, double t)
+  {
+    return glm::length(c.dnf(t,1));
+  }
+
 	double K(Curve& c, double t)
 	{
 		double x1 = frenet_coordinate<1,1>(c, t);

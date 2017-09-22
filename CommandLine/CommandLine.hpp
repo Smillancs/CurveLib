@@ -278,12 +278,12 @@ bool CommandLine::runTest(std::stringstream& cmd)
 
 
 
-		std::vector<Reconstruction<1>::Input> vec = {getPointData<1>(ExampleHandler::getP(3),0), getPointData<1>(ExampleHandler::getP(3),1)};
-		Reconstruction<1> opt;
+		std::vector<Reconstruction<2>::Input> vec = {getPointData2(ExampleHandler::getP(3),0), getPointData2(ExampleHandler::getP(3),1)};
+		Reconstruction<2> opt;
 		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
 
 		auto start = std::chrono::high_resolution_clock::now();
-		std::vector<Reconstruction<1>::Result> res = opt.optimize(target, vec, dump);
+		std::vector<Reconstruction<2>::Result> res = opt.optimize(target, vec, dump);
 		auto end = std::chrono::high_resolution_clock::now();
 		Curve::Ptr optCurve = opt.createResultCurve(res[0]);
 

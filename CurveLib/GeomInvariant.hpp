@@ -9,6 +9,8 @@ namespace GeomInv
 	glm::dvec3 b(Curve& c, double t, unsigned limit = 5);
 	glm::dvec3 n(Curve& c, double t);
 
+  double v(Curve& c, double t);
+
 	double K(Curve& c, double t);
 	double dK(Curve& c, double t);
 	double ddK(Curve& c, double t);

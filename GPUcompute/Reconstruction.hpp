@@ -53,31 +53,21 @@ private:
   std::array<float, N-2> t;  // torsion and its differentiates
 };
 
-template <int N>
-ReconstructionData<N> getPointData(Curve::Ptr c, double t)
+ReconstructionData<1> getPointData1(Curve::Ptr c, double t)
 {
-  ReconstructionData<N> data;
+  ReconstructionData<1> data;
   data.p = c->f(t);
-  if(N >= 1)
-  {
-    data.e = GeomInv::e(*c, t);
-    // TODO: compile-time if
-    /*if(N >= 2)
-    {
-      data.n = GeomInv::n(*c, t);
-      data.K() = GeomInv::K(*c, t);
-      if(N >= 3)
-      {
-        data.dK(1) = GeomInv::dK(*c, t);
-        data.T() = GeomInv::T(*c, t);
-        if(N >= 4)
-        {
-          data.dK(2) = GeomInv::ddK(*c, t);
-          data.dT(1) = GeomInv::dT(*c, t);
-        }
-      }
-    }*/
-  }
+  data.e = GeomInv::e(*c, t);
+  return data;
+}
+
+ReconstructionData<2> getPointData2(Curve::Ptr c, double t)
+{
+  ReconstructionData<2> data;
+  data.p = c->f(t);
+  data.e = GeomInv::e(*c, t);
+  data.n = GeomInv::n(*c, t);
+  data.K() = GeomInv::K(*c, t);
   return data;
 }
 

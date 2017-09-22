@@ -175,13 +175,13 @@ void CMyApp::Update()
     activeCurves = {activeCurve};
   }
 
-  if(makeOpt)
+  if(makeOpt && optRank == 1)
   {
-    std::vector<Reconstruction<1>::Input> vec = {getPointData<1>(activeCurve,0)};
+    std::vector<Reconstruction<1>::Input> vec = {getPointData1(activeCurve,0)};
     for(float i = 1; i <= segments; ++i)
     {
-      vec.push_back(getPointData<1>(activeCurve,i/(float)segments));
-      vec.push_back(getPointData<1>(activeCurve,i/(float)segments));
+      vec.push_back(getPointData1(activeCurve,i/(float)segments));
+      vec.push_back(getPointData1(activeCurve,i/(float)segments));
     }
     vec.pop_back();
 		Reconstruction<1> opt;
@@ -200,13 +200,44 @@ void CMyApp::Update()
       std::cerr << optCurve->about() << std::endl;
       activeCurves.push_back(optCurve);
 
-      exportCurveData("curve.txt", optCurve, GeomInv::dK, 1000, i);
+      exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
     }
 
 
     makeOpt = false;
 
-    //activeCurve = optCurve;
+    InitCurveRenderer(activeCurves, tesselated);
+  }
+  if(makeOpt && optRank == 2)
+  {
+    std::vector<Reconstruction<2>::Input> vec = {getPointData2(activeCurve,0)};
+    for(float i = 1; i <= segments; ++i)
+    {
+      vec.push_back(getPointData2(activeCurve,i/(float)segments));
+      vec.push_back(getPointData2(activeCurve,i/(float)segments));
+    }
+    vec.pop_back();
+		Reconstruction<2> opt;
+		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
+
+		std::vector<Reconstruction<2>::Result> res = opt.optimize("curvatureD", vec, dump);
+
+
+        std::cerr << "Debug: " << std::endl;
+          for(int i=0;i<12;++i) std::cerr << (*dump)[i] << std::endl;
+
+    activeCurves.clear();
+    for(size_t i=0;i<res.size();++i)
+		{
+      Curve::Ptr optCurve = opt.createResultCurve(res[i]);
+      std::cerr << optCurve->about() << std::endl;
+      activeCurves.push_back(optCurve);
+
+      exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
+    }
+
+
+    makeOpt = false;
 
     InitCurveRenderer(activeCurves, tesselated);
   }
@@ -319,6 +350,12 @@ void CMyApp::Render()
       if(ImGui::Button("Optimize (deg3)", ImVec2(0,0)))
       {
         makeOpt = true;
+        optRank = 1;
+      }
+      if(ImGui::Button("Optimize (deg5)", ImVec2(0,0)))
+      {
+        makeOpt = true;
+        optRank = 2;
       }
   }
 	ImGui::End();
@@ -373,6 +410,7 @@ void CMyApp::Run()
 	}
 	bool quit = false;
 	SDL_Event ev;
+	unsigned t = SDL_GetTicks();
 	while (!quit)
 	{
 		while (SDL_PollEvent(&ev))
@@ -427,6 +465,9 @@ void CMyApp::Run()
 		ImGui::Render();
 
 		SDL_GL_SwapWindow(win);
+    unsigned spf = SDL_GetTicks() - t;
+		if (spf < 16 ) SDL_Delay(16-spf);
+  	t = SDL_GetTicks();
 	}
 
 	Clean();

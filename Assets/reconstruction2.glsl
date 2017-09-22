@@ -4,7 +4,7 @@
 
 layout (local_size_x = 9, local_size_y = 1) in;
 
-const int continuity = 1;
+const int continuity = 2;
 const int extra_points = 0;
 const int point_num = (2*continuity+1)+1+extra_points;
 const int max_length = point_num;
@@ -43,7 +43,7 @@ struct Result
 
 layout(std430, binding = 0) buffer inputBuffer
 {
-	ReconstructionData1 data[]; // will be paired i.e. startpoint, endpoint, startpoint, ...
+	ReconstructionData2 data[]; // will be paired i.e. startpoint, endpoint, startpoint, ...
 } inBuf;
 
 layout(std430, binding = 1) buffer destBuffer
@@ -129,7 +129,7 @@ float[freedom] linsolve(float mat[freedom*freedom], float vec[freedom])
   }
   return vec;
 }
-const float pinverse[point_num*point_num] = float[point_num*point_num](1,0,0,0, 1,1/3.0,0,0, 0,0,1,-1/3.0, 0,0,1,0);
+const float pinverse[point_num*point_num] = float[point_num*point_num](1.0000,0.0000,0.0000,0,0,0,1.0000,0.2000,0.0000,0,0,0,1.0000,0.4000,0.0500,0,0,0,0,0,0,1.0000,-0.4000,0.0500,0,0,0,1.0000,-0.2000,-0.0000,0,0,0,1.0000,-0.0000,-0.0000);
 
 
 vec3[point_num] calculateControlPoints(vec3 start[continuity+1], vec3 end[continuity+1])
@@ -187,7 +187,9 @@ void main()
     }
           vec3 d0 = freedoms_local[0] * inBuf.data[2*id].e.xyz;
       vec3 d1 = freedoms_local[1] * inBuf.data[2*id+1].e.xyz;
-  		points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1));
+      vec3 dd0 = freedoms_local[2] * inBuf.data[2*id].e.xyz + inBuf.data[2*id].K * freedoms_local[0] * freedoms_local[0] * inBuf.data[2*id].n;
+      vec3 dd1 = freedoms_local[3] * inBuf.data[2*id+1].e.xyz + inBuf.data[2*id+1].K * freedoms_local[1] * freedoms_local[1] * inBuf.data[2*id+1].n;
+      points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0, dd0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1, dd1));
     		integrals[thread] = integral2(points);
 
 		barrier();
@@ -239,7 +241,9 @@ void main()
 	{
           vec3 d0 = freedoms[0] * inBuf.data[2*id].e.xyz;
       vec3 d1 = freedoms[1] * inBuf.data[2*id+1].e.xyz;
-  		points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1));
+      vec3 dd0 = freedoms[2] * inBuf.data[2*id].e.xyz + inBuf.data[2*id].K * freedoms[0] * freedoms[0] * inBuf.data[2*id].n;
+      vec3 dd1 = freedoms[3] * inBuf.data[2*id+1].e.xyz + inBuf.data[2*id+1].K * freedoms[1] * freedoms[1] * inBuf.data[2*id+1].n;
+      points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0, dd0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1, dd1));
         for(int j=0;j < point_num;++j)
 		   positions[ITERATIONS].points[j] = points[j];
 		positions[ITERATIONS].norm = integral2(points);
