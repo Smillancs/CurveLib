@@ -84,4 +84,6 @@ protected:
 
   bool ortho = false;
   float zoom = 10.0f;
+
+  int colorRoles[3] = {0,0,0};
 };

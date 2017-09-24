@@ -260,6 +260,9 @@ void CMyApp::Render()
 		auto & currentProgram = m_program_bez;
 		currentProgram.On();
 		currentProgram.SetUniform("VP", vp);
+    currentProgram.SetUniform("redRole", colorRoles[0]);
+    currentProgram.SetUniform("greenRole", colorRoles[1]);
+    currentProgram.SetUniform("blueRole", colorRoles[2]);
     for(size_t i=0;i<m_vb.size();++i)
     {
   		currentProgram.SetUniform("point_num", vertsInPatch[i]);
@@ -324,12 +327,6 @@ void CMyApp::Render()
       ImGui::Checkbox("GPU tesselation", &tesselated);
       change |= (b != tesselated);
   }
-  if (ImGui::CollapsingHeader("Camera settings"))
-  {
-      static int item = 0;
-      ImGui::Combo("Projection", &item, "Free perspective\0Ortographic to XY\0\0");
-      ortho = item == 1;
-  }
   if (ImGui::CollapsingHeader("Generate new random curve"))
   {
       static char str0[5] = "5";
@@ -357,6 +354,18 @@ void CMyApp::Render()
         makeOpt = true;
         optRank = 2;
       }
+  }
+  if (ImGui::CollapsingHeader("Camera settings"))
+  {
+      static int item = 0;
+      ImGui::Combo("Projection", &item, "Free perspective\0Ortographic to XY\0\0");
+      ortho = item == 1;
+  }
+  if (ImGui::CollapsingHeader("Coloring settings"))
+  {
+      ImGui::Combo("Red", &colorRoles[0], "none\0velocity\0curvature\0derivative of curvature\0torsion\0negative torsion\0\0");
+      ImGui::Combo("Green", &colorRoles[1], "none\0velocity\0curvature\0derivative of curvature\0torsion\0negative torsion\0\0");
+      ImGui::Combo("Blue", &colorRoles[2], "none\0velocity\0curvature\0derivative of curvature\0torsion\0negative torsion\0\0");
   }
 	ImGui::End();
 
