@@ -58,11 +58,13 @@ protected:
 	gShaderProgram	m_program_tess;
 	gShaderProgram	m_program_bez;
 	gShaderProgram	m_program_basic;
+  gShaderProgram  m_program_info;
 	gVertexBuffer axes;
 
   std::vector<Curve::Ptr> activeCurves;
   Curve::Ptr activeCurve;
   int curveSelect = -1;
+  bool multipleCurves = false;
 
 	std::vector<gVertexBuffer>	m_vb;
 
@@ -79,6 +81,7 @@ protected:
   bool opt = false;
   bool makeOpt = false;
   int optRank = 0;
+  std::string optTarget = "curvatureD";
 
   int segments = 1;
 
@@ -86,4 +89,8 @@ protected:
   float zoom = 10.0f;
 
   int colorRoles[3] = {0,0,0};
+
+  bool drawControlData = false;
+
+  std::vector<float> subdivisionPlaces = {0, 1};
 };

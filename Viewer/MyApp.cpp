@@ -25,6 +25,7 @@ bool CMyApp::Init()
 {
 	glClearColor(1.0, 1.0, 1.0, 1.0);
   glLineWidth(2.0);
+  glEnable(GL_POINT_SMOOTH);
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
@@ -85,6 +86,14 @@ bool CMyApp::Init()
 	m_program_basic.BindAttribLoc(1, "vs_in_col");
 
 	if ( !m_program_basic.LinkProgram() )
+	{
+		return false;
+	}
+
+  m_program_info.AttachShader(GL_VERTEX_SHADER, "../Assets/curveControlInfo.vert");
+  m_program_info.AttachShader(GL_FRAGMENT_SHADER, "../Assets/curveControlInfo.frag");
+
+	if ( !m_program_info.LinkProgram() )
 	{
 		return false;
 	}
@@ -173,21 +182,22 @@ void CMyApp::Update()
     change = false;
     InitCurveRenderer(activeCurve, tesselated);
     activeCurves = {activeCurve};
+    multipleCurves = false;
   }
 
   if(makeOpt && optRank == 1)
   {
-    std::vector<Reconstruction<1>::Input> vec = {getPointData1(activeCurve,0)};
+    std::vector<Reconstruction<1>::Input> vec = {getPointData1(activeCurve, subdivisionPlaces[0])};
     for(float i = 1; i <= segments; ++i)
     {
-      vec.push_back(getPointData1(activeCurve,i/(float)segments));
-      vec.push_back(getPointData1(activeCurve,i/(float)segments));
+      vec.push_back(getPointData1(activeCurve,subdivisionPlaces[i]));
+      vec.push_back(getPointData1(activeCurve,subdivisionPlaces[i]));
     }
     vec.pop_back();
 		Reconstruction<1> opt;
 		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
 
-		std::vector<Reconstruction<1>::Result> res = opt.optimize("curvatureD", vec, dump);
+		std::vector<Reconstruction<1>::Result> res = opt.optimize(optTarget, vec, dump);
 
 
         std::cerr << "Debug: " << std::endl;
@@ -198,11 +208,12 @@ void CMyApp::Update()
 		{
       Curve::Ptr optCurve = opt.createResultCurve(res[i]);
       std::cerr << optCurve->about() << std::endl;
+      std::cerr << "Norm: " << res[i].second[0] << std::endl;
       activeCurves.push_back(optCurve);
 
       exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
     }
-
+    multipleCurves = true;
 
     makeOpt = false;
 
@@ -210,17 +221,17 @@ void CMyApp::Update()
   }
   if(makeOpt && optRank == 2)
   {
-    std::vector<Reconstruction<2>::Input> vec = {getPointData2(activeCurve,0)};
+    std::vector<Reconstruction<2>::Input> vec = {getPointData2(activeCurve,subdivisionPlaces[0])};
     for(float i = 1; i <= segments; ++i)
     {
-      vec.push_back(getPointData2(activeCurve,i/(float)segments));
-      vec.push_back(getPointData2(activeCurve,i/(float)segments));
+      vec.push_back(getPointData2(activeCurve, subdivisionPlaces[i]));
+      vec.push_back(getPointData2(activeCurve, subdivisionPlaces[i]));
     }
     vec.pop_back();
 		Reconstruction<2> opt;
 		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
 
-		std::vector<Reconstruction<2>::Result> res = opt.optimize("curvatureD", vec, dump);
+		std::vector<Reconstruction<2>::Result> res = opt.optimize(optTarget, vec, dump);
 
 
         std::cerr << "Debug: " << std::endl;
@@ -231,11 +242,12 @@ void CMyApp::Update()
 		{
       Curve::Ptr optCurve = opt.createResultCurve(res[i]);
       std::cerr << optCurve->about() << std::endl;
+      std::cerr << "Norm: " << res[i].second[0] << std::endl;
       activeCurves.push_back(optCurve);
 
       exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
     }
-
+    multipleCurves = true;
 
     makeOpt = false;
 
@@ -266,7 +278,7 @@ void CMyApp::Render()
     for(size_t i=0;i<m_vb.size();++i)
     {
   		currentProgram.SetUniform("point_num", vertsInPatch[i]);
-      std::shared_ptr<BezierCurve> bez = std::dynamic_pointer_cast<BezierCurve>(activeCurves.size() == 0 ? activeCurve : activeCurves[i]);
+      std::shared_ptr<BezierCurve> bez = std::dynamic_pointer_cast<BezierCurve>(!multipleCurves ? activeCurve : activeCurves[i]);
       auto cp = bez->GetGlmControlPoints();
       glUniform3fv(glGetUniformLocation(currentProgram.ID(), "pointData"),
       		cp.size(),
@@ -303,6 +315,46 @@ void CMyApp::Render()
 
 	m_program_basic.Off();
 
+  if(drawControlData)
+  {
+    glLineWidth(1);
+    glPointSize(5);
+    m_program_info.On();
+    m_program_info.SetUniform( "VP", vp );
+
+    for(size_t i=0;i<std::max(subdivisionPlaces.size()-1, m_vb.size());++i)
+    {
+      std::vector<glm::vec3> controlData;
+      if(!multipleCurves)
+      {
+        controlData.push_back(activeCurve->f(subdivisionPlaces[i]));
+        controlData.push_back(activeCurve->f(subdivisionPlaces[i])+activeCurve->dnf(subdivisionPlaces[i],1));
+        controlData.push_back(activeCurve->f(subdivisionPlaces[i+1])-activeCurve->dnf(subdivisionPlaces[i+1],1));
+        controlData.push_back(activeCurve->f(subdivisionPlaces[i+1]));
+      }
+      else
+      {
+        controlData.push_back(activeCurves[i]->f(0));
+        controlData.push_back(activeCurves[i]->f(0)+activeCurves[i]->dnf(0,1));
+        controlData.push_back(activeCurves[i]->f(1)-activeCurves[i]->dnf(1,1));
+        controlData.push_back(activeCurves[i]->f(1));
+      }
+      glUniform3fv(glGetUniformLocation(m_program_info.ID(), "positions"),
+          controlData.size(),
+          &controlData[0][0]);
+
+      m_program_info.SetUniform("color", glm::vec4(1,0,0,1));
+      glDrawArrays(GL_POINTS, 0, 1);
+      glDrawArrays(GL_POINTS, 3, 1);
+      m_program_info.SetUniform("color", glm::vec4(0,1,0,1));
+      glDrawArrays(GL_LINES, 0, 4);
+
+    }
+    m_program_info.Off();
+    glLineWidth(2);
+    glPointSize(1);
+  }
+
 
   ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
   ImGui::SetNextWindowSize(ImVec2(300,300), ImGuiSetCond_FirstUseEver);
@@ -319,6 +371,7 @@ void CMyApp::Render()
       if(ImGui::Button("Go!", ImVec2(0,0)))
       {
         change = true;
+        multipleCurves = false;
       }
   }
   if (ImGui::CollapsingHeader("Select drawing method"))
@@ -337,13 +390,25 @@ void CMyApp::Render()
       {
         ExampleHandler::newRandom(atoi(str0), item+2);
         change = true;
+        multipleCurves = false;
       }
   }
-  if (ImGui::CollapsingHeader("Optimize current curve"))
+  if (ImGui::CollapsingHeader("Subdivision"))
   {
       static char str0[5] = "1";
       ImGui::InputText("Curve segments: ", str0, 5);
       segments = atoi(str0);
+      subdivisionPlaces.resize(segments+1);
+      for(int i=0; i<=segments; ++i)
+        ImGui::SliderFloat(std::to_string(i).c_str(), &subdivisionPlaces[i], 0.0f, 1.0f, "%.3f");
+      std::sort(subdivisionPlaces.begin(), subdivisionPlaces.end());
+  }
+  if (ImGui::CollapsingHeader("Optimize current curve"))
+  {
+      static int item = 1;
+      static const std::vector<std::string> names = {"curvature", "curvatureD", "const_velocity"};
+      ImGui::Combo("Optimization target", &item, "curvature\0derivative of curvature\0constant velocity\0\0");
+      optTarget = names[item];
       if(ImGui::Button("Optimize (deg3)", ImVec2(0,0)))
       {
         makeOpt = true;
@@ -367,6 +432,11 @@ void CMyApp::Render()
       ImGui::Combo("Green", &colorRoles[1], "none\0velocity\0curvature\0derivative of curvature\0torsion\0negative torsion\0\0");
       ImGui::Combo("Blue", &colorRoles[2], "none\0velocity\0curvature\0derivative of curvature\0torsion\0negative torsion\0\0");
   }
+  if (ImGui::CollapsingHeader("Draw control data (points and derivatives)"))
+  {
+      ImGui::Checkbox("draw", &drawControlData);
+  }
+
 	ImGui::End();
 
 	/*ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
