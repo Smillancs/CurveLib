@@ -262,7 +262,7 @@ void CMyApp::Render()
   glm::mat4 vp;
   if(ortho)
   {
-    vp = glm::ortho(-zoom,zoom,-zoom,zoom,1.0f,20.0f)*glm::lookAt(glm::vec3(0,0,10),glm::vec3(0),glm::vec3(0,1,0));
+    vp = glm::ortho(-zoom+displacement.x,zoom+displacement.x,-zoom+displacement.y,zoom+displacement.y,1.0f,20.0f)*glm::lookAt(glm::vec3(0,0,10),glm::vec3(0),glm::vec3(0,1,0));
   }
   else
     vp = m_camera.GetViewProj();
@@ -452,6 +452,23 @@ void CMyApp::KeyboardDown(SDL_KeyboardEvent& key)
 void CMyApp::KeyboardUp(SDL_KeyboardEvent& key)
 {
 	m_camera.KeyboardUp(key);
+  if(ortho)
+  {
+    switch (key.keysym.sym) {
+      case SDLK_w:
+        displacement.y += zoom/10;
+        break;
+      case SDLK_s:
+        displacement.y -= zoom/10;
+        break;
+      case SDLK_a:
+        displacement.x -= zoom/10;
+        break;
+      case SDLK_d:
+        displacement.x += zoom/10;
+        break;
+    }
+  }
 }
 
 void CMyApp::MouseMove(SDL_MouseMotionEvent& mouse)
@@ -469,7 +486,8 @@ void CMyApp::MouseUp(SDL_MouseButtonEvent& mouse)
 
 void CMyApp::MouseWheel(SDL_MouseWheelEvent& wheel)
 {
-  zoom -= wheel.y * 0.1f;
+  if(ortho)
+    zoom -= wheel.y * 0.1f;
 }
 
 void CMyApp::Resize(int _w, int _h)

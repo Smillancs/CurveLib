@@ -87,6 +87,7 @@ protected:
 
   bool ortho = false;
   float zoom = 10.0f;
+  glm::vec2 displacement = glm::vec2(0,0);
 
   int colorRoles[3] = {0,0,0};
 
