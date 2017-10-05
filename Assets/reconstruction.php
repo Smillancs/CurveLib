@@ -24,17 +24,6 @@ struct ReconstructionData2
   float K;
 };
 
-struct Freedom1
-{
-  float x1;
-};
-
-struct PointData
-{
-  ReconstructionData1 fix;
-  Freedom1 fre;
-};
-
 struct Result
 {
   vec3 points[point_num];
@@ -75,14 +64,17 @@ subroutine ( GeomInvariantEval ) float const_velocity(vec3 data[max_length], int
 subroutine uniform GeomInvariantEval Eval;
 
 // Gauss–Legendre quadrature formula
-const float legendre_coeffs[8] = float[8](0.050614, 0.111191, 0.156854, 0.181342, 0.181341, 0.156852, 0.111190, 0.050614);
-const float legendre_roots[8]  = float[8](0.019855, 0.101667, 0.237235, 0.408284, 0.591719, 0.762768, 0.898334, 0.980145);
+const float legendre_coeffs[20] = float[20](0.00880700357, 0.0203007149, 0.03133602417, 0.04163837079, 0.05096505991, 0.05909726598, 0.06584431922, 0.07104805466, 0.07458649324, 0.07637669357, 0.07637669357, 0.07458649324, 0.07104805466, 0.06584431922, 0.05909726598, 0.05096505991, 0.04163837079, 0.03133602417, 0.0203007149, 0.00880700357);
+const float legendre_roots[20]  = float[20](0.003435700407, 0.01801403636, 0.04388278587, 0.08044151409, 0.1268340468, 0.1819731596, 0.244566499, 0.3131469556, 0.3861070744, 0.4617367394, 0.5382632606, 0.6138929256, 0.6868530444, 0.755433501, 0.8180268404, 0.8731659532, 0.9195584859, 0.9561172141, 0.9819859636, 0.9965642996);
+// Lobatto-quadrature
+const float lobatto_roots[10] = float[10](0, 0.040233045899999986, 0.13061306745, 0.2610375251, 0.41736052115, 0.58263947885, 0.7389624749, 0.86938693255, 0.9597669541, 1);
+const float lobatto_coeffs[10] = float[10](0.0111111111, 0.0666529954, 0.112444671, 0.1460213418, 0.1637698806, 0.1637698806, 0.1460213418, 0.112444671, 0.0666529954, 0.0111111111);
 
 float integral2(vec3 points[max_length])
 {
 	float s = 0.f;
 
-	for(int i = 0; i < 8; ++i)
+	for(int i = 0; i < 20; ++i)
 	{
 		float val = Eval(points, point_num, legendre_roots[i]);
 		s += val * val * legendre_coeffs[i];
@@ -230,7 +222,7 @@ else if($argv[1] == 2)
       if(threadX == threadY)
         dd[threadXY] = (integrals[threadXY*9+5] - 2*integrals[threadXY*9+4] + integrals[threadXY*9+3])/(eps*eps);
       else
-        dd[threadXY] = ((integrals[threadXY*9+8]-integrals[threadXY*9+6])-(integrals[threadXY*9+2]-integrals[threadXY*9+0]))/(eps*eps);
+        dd[threadXY] = ((integrals[threadXY*9+8]-integrals[threadXY*9+6])-(integrals[threadXY*9+2]-integrals[threadXY*9+0]))/(4*eps*eps);
 
       //for(int i=0;i < 9;++i) dump.data[i] = integrals[i];
       /*dump.data[0] = d[0];

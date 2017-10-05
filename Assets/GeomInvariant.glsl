@@ -26,6 +26,11 @@ vec3 n(vec3 data[max_length], int point_num, float t)
 	return cross(b(data, point_num, t), e(data, point_num, t));
 }
 
+float v(vec3 data[max_length], int point_num, float t)
+{
+  return length(Diff(data, 1, t, point_num));
+}
+
 float frenet_coordinate_e(vec3 data[max_length], int point_num, float t, int order)
 {
 	return dot(Diff(data, order, t, point_num), e(data, point_num, t));
