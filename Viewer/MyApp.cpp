@@ -406,6 +406,9 @@ void CMyApp::Render()
     currentProgram.SetUniform("redRole", colorRoles[0]);
     currentProgram.SetUniform("greenRole", colorRoles[1]);
     currentProgram.SetUniform("blueRole", colorRoles[2]);
+    currentProgram.SetUniform("scaleRed", colorScales[0]);
+    currentProgram.SetUniform("scaleGreen", colorScales[1]);
+    currentProgram.SetUniform("scaleBlue", colorScales[2]);
     for(size_t i=0;i<m_vb.size();++i)
     {
   		currentProgram.SetUniform("point_num", vertsInPatch[i]);
@@ -560,8 +563,11 @@ void CMyApp::Render()
   if (ImGui::CollapsingHeader("Coloring settings"))
   {
       ImGui::Combo("Red", &colorRoles[0], "none\0velocity\0curvature\0derivative of curvature\0torsion\0negative torsion\0\0");
+      ImGui::SliderFloat("ScaleRed", &colorScales[0], 0.01f, 100.0f, "%.3f", 3.0f);
       ImGui::Combo("Green", &colorRoles[1], "none\0velocity\0curvature\0derivative of curvature\0torsion\0negative torsion\0\0");
+      ImGui::SliderFloat("ScaleGreen", &colorScales[1], 0.01f, 100.0f, "%.3f", 3.0f);
       ImGui::Combo("Blue", &colorRoles[2], "none\0velocity\0curvature\0derivative of curvature\0torsion\0negative torsion\0\0");
+      ImGui::SliderFloat("ScaleBlue", &colorScales[2], 0.01f, 100.0f, "%.3f", 3.0f);
   }
   if (ImGui::CollapsingHeader("Draw control data (points and derivatives)"))
   {

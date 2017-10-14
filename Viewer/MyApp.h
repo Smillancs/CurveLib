@@ -92,6 +92,8 @@ protected:
 
   int colorRoles[3] = {0,0,0};
 
+  float colorScales[3] = {1,1,1};
+
   bool drawControlData = false;
 
   std::vector<float> subdivisionPlaces = {0, 1};
