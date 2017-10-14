@@ -1,2 +1,9 @@
-php reconstruction.php 1 > reconstruction1.glsl
-php reconstruction.php 2 > reconstruction2.glsl
+php reconstruction.php 1 0 > reconstruction1.glsl
+php reconstruction.php 2 0 > reconstruction2.glsl
+php reconstruction.php 3 0 > reconstruction3.glsl
+php reconstruction.php 1 1 > reconstruction1_1.glsl
+php reconstruction.php 2 1 > reconstruction2_1.glsl
+php reconstruction.php 3 1 > reconstruction3_1.glsl
+php reconstruction.php 1 2 > reconstruction1_2.glsl
+php reconstruction.php 2 2 > reconstruction2_2.glsl
+php reconstruction.php 3 2 > reconstruction3_2.glsl

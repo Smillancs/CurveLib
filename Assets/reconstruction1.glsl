@@ -10,18 +10,11 @@ const int freedom = 2;
 
 layout (local_size_x = 2, local_size_y = 2, local_size_z = 9) in;
 
+
 struct ReconstructionData1
 {
   vec3 p;
   vec3 e;
-};
-
-struct ReconstructionData2
-{
-  vec3 p;
-  vec3 e;
-  vec3 n;
-  float K;
 };
 
 struct Result
@@ -83,15 +76,15 @@ float integral2(vec3 points[max_length])
 	return sqrt(s);
 }
 
-float[point_num*3] matmul(float pinverse[point_num*point_num], float pointdata[point_num*3])
+float[(2*continuity+2)*3] matmul(float pinverse[(2*continuity+2)*(2*continuity+2)], float pointdata[(2*continuity+2)*3])
 {
-  float res[point_num*3];
-  for(int i=0;i < point_num;++i)
+  float res[(2*continuity+2)*3];
+  for(int i=0;i < (2*continuity+2);++i)
     for(int j=0;j < 3;++j)
     {
       res[3*i+j] = 0;
-      for(int k=0;k < point_num;++k)
-        res[3*i+j] += pinverse[point_num*i+k]*pointdata[3*k+j];
+      for(int k=0;k < (2*continuity+2);++k)
+        res[3*i+j] += pinverse[(2*continuity+2)*i+k]*pointdata[3*k+j];
     }
   return res;
 }
@@ -124,28 +117,30 @@ float[freedom] linsolve(float mat[freedom*freedom], float vec[freedom])
   }
   return vec;
 }
-const float pinverse[point_num*point_num] = float[point_num*point_num](1,0,0,0, 1,1/3.0,0,0, 0,0,1,-1/3.0, 0,0,1,0);
 
+const float pinverse[(2*continuity+2)*(2*continuity+2)] = float[(2*continuity+2)*(2*continuity+2)](1,0,0,0, 1,1/3.0,0,0, 0,0,1,-1/3.0, 0,0,1,0);
 
 vec3[point_num] calculateControlPoints(vec3 start[continuity+1], vec3 end[continuity+1])
 {
-  float pointdata[point_num*3];
+  float pointdata[(2*continuity+2)*3];
   for(int i=0;i < continuity+1;++i)
   {
     pointdata[3*i+0] = start[i].x;
     pointdata[3*i+1] = start[i].y;
     pointdata[3*i+2] = start[i].z;
   }
-  for(int i=point_num-continuity-1;i < point_num;++i)
+  for(int i=continuity+1;i < 2*continuity+2;++i)
   {
-    pointdata[3*i+0] = end[i-(point_num-continuity-1)].x;
-    pointdata[3*i+1] = end[i-(point_num-continuity-1)].y;
-    pointdata[3*i+2] = end[i-(point_num-continuity-1)].z;
+    pointdata[3*i+0] = end[i-continuity-1].x;
+    pointdata[3*i+1] = end[i-continuity-1].y;
+    pointdata[3*i+2] = end[i-continuity-1].z;
   }
-  float controlpoints[point_num*3] = matmul(pinverse, pointdata);
+  float controlpoints[(2*continuity+2)*3] = matmul(pinverse, pointdata);
   vec3 controlPoints[point_num];
-  for(int i=0;i < point_num;++i)
+  for(int i=0;i < continuity+1;++i)
     controlPoints[i] = vec3(controlpoints[3*i],controlpoints[3*i+1],controlpoints[3*i+2]);
+  for(int i=0;i < continuity+1;++i)
+    controlPoints[continuity+1+extra_points+i] = vec3(controlpoints[3*(continuity+1)+3*i],controlpoints[3*(continuity+1)+3*i+1],controlpoints[3*(continuity+1)+3*i+2]);
   return controlPoints;
 }
 
@@ -210,12 +205,6 @@ void main()
         dd[threadXY] = ((integrals[threadXY*9+8]-integrals[threadXY*9+6])-(integrals[threadXY*9+2]-integrals[threadXY*9+0]))/(4*eps*eps);
 
       //for(int i=0;i < 9;++i) dump.data[i] = integrals[i];
-      /*dump.data[0] = d[0];
-      dump.data[1] = d[1];
-      dump.data[2] = dd[0];
-      dump.data[3] = dd[1];
-      dump.data[4] = dd[2];
-      dump.data[5] = dd[3];*/
       barrier();
       if(threadXY == 0)
   			step = linsolve(dd,d);

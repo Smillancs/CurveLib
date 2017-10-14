@@ -185,68 +185,199 @@ void CMyApp::Update()
     multipleCurves = false;
   }
 
-  if(makeOpt && optRank == 1)
+  if(makeOpt)
   {
-    std::vector<Reconstruction<1>::Input> vec = {getPointData1(activeCurve, subdivisionPlaces[0])};
-    for(float i = 1; i <= segments; ++i)
+    std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
+    if(optRank == 1)
     {
-      vec.push_back(getPointData1(activeCurve,subdivisionPlaces[i]));
-      vec.push_back(getPointData1(activeCurve,subdivisionPlaces[i]));
+      std::vector<Reconstruction<1>::Input> vec = {getPointData1(activeCurve, subdivisionPlaces[0])};
+      for(float i = 1; i <= segments; ++i)
+      {
+        vec.push_back(getPointData1(activeCurve,subdivisionPlaces[i]));
+        vec.push_back(getPointData1(activeCurve,subdivisionPlaces[i]));
+      }
+      vec.pop_back();
+
+      if(optExtra == 0)
+      {
+    		Reconstruction<1,0> opt;
+
+    		std::vector<Reconstruction<1,0>::Result> res = opt.optimize(optTarget, vec, dump);
+
+        activeCurves.clear();
+        for(size_t i=0;i<res.size();++i)
+    		{
+          Curve::Ptr optCurve = opt.createResultCurve(res[i]);
+          std::cerr << optCurve->about() << std::endl;
+          std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          activeCurves.push_back(optCurve);
+
+          exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
+        }
+      }
+      else if(optExtra == 1)
+      {
+    		Reconstruction<1,1> opt;
+
+    		std::vector<Reconstruction<1,1>::Result> res = opt.optimize(optTarget, vec, dump);
+
+        activeCurves.clear();
+        for(size_t i=0;i<res.size();++i)
+    		{
+          Curve::Ptr optCurve = opt.createResultCurve(res[i]);
+          std::cerr << optCurve->about() << std::endl;
+          std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          activeCurves.push_back(optCurve);
+
+          exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
+        }
+      }
+      else if(optExtra == 2)
+      {
+    		Reconstruction<1,2> opt;
+
+    		std::vector<Reconstruction<1,2>::Result> res = opt.optimize(optTarget, vec, dump);
+
+        activeCurves.clear();
+        for(size_t i=0;i<res.size();++i)
+    		{
+          Curve::Ptr optCurve = opt.createResultCurve(res[i]);
+          std::cerr << optCurve->about() << std::endl;
+          std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          activeCurves.push_back(optCurve);
+
+          exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
+        }
+      }
     }
-    vec.pop_back();
-		Reconstruction<1> opt;
-		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
-
-		std::vector<Reconstruction<1>::Result> res = opt.optimize(optTarget, vec, dump);
-
-
-        std::cerr << "Debug: " << std::endl;
-          for(int i=0;i<12;++i) std::cerr << (*dump)[i] << std::endl;
-
-    activeCurves.clear();
-    for(size_t i=0;i<res.size();++i)
-		{
-      Curve::Ptr optCurve = opt.createResultCurve(res[i]);
-      std::cerr << optCurve->about() << std::endl;
-      std::cerr << "Norm: " << res[i].second[0] << std::endl;
-      activeCurves.push_back(optCurve);
-
-      exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
-    }
-    multipleCurves = true;
-
-    makeOpt = false;
-
-    InitCurveRenderer(activeCurves, tesselated);
-  }
-  if(makeOpt && optRank == 2)
-  {
-    std::vector<Reconstruction<2>::Input> vec = {getPointData2(activeCurve,subdivisionPlaces[0])};
-    for(float i = 1; i <= segments; ++i)
+    else if(optRank == 2)
     {
-      vec.push_back(getPointData2(activeCurve, subdivisionPlaces[i]));
-      vec.push_back(getPointData2(activeCurve, subdivisionPlaces[i]));
+      std::vector<Reconstruction<2>::Input> vec = {getPointData2(activeCurve,subdivisionPlaces[0])};
+      for(float i = 1; i <= segments; ++i)
+      {
+        vec.push_back(getPointData2(activeCurve, subdivisionPlaces[i]));
+        vec.push_back(getPointData2(activeCurve, subdivisionPlaces[i]));
+      }
+      vec.pop_back();
+
+      if(optExtra == 0)
+      {
+    		Reconstruction<2,0> opt;
+
+    		std::vector<Reconstruction<2,0>::Result> res = opt.optimize(optTarget, vec, dump);
+
+        activeCurves.clear();
+        for(size_t i=0;i<res.size();++i)
+    		{
+          Curve::Ptr optCurve = opt.createResultCurve(res[i]);
+          std::cerr << optCurve->about() << std::endl;
+          std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          activeCurves.push_back(optCurve);
+
+          exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
+        }
+      }
+      else if(optExtra == 1)
+      {
+    		Reconstruction<2,1> opt;
+
+    		std::vector<Reconstruction<2,1>::Result> res = opt.optimize(optTarget, vec, dump);
+
+        activeCurves.clear();
+        for(size_t i=0;i<res.size();++i)
+    		{
+          Curve::Ptr optCurve = opt.createResultCurve(res[i]);
+          std::cerr << optCurve->about() << std::endl;
+          std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          activeCurves.push_back(optCurve);
+
+          exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
+        }
+      }
+      else if(optExtra == 2)
+      {
+    		Reconstruction<2,2> opt;
+
+    		std::vector<Reconstruction<2,2>::Result> res = opt.optimize(optTarget, vec, dump);
+
+        activeCurves.clear();
+        for(size_t i=0;i<res.size();++i)
+    		{
+          Curve::Ptr optCurve = opt.createResultCurve(res[i]);
+          std::cerr << optCurve->about() << std::endl;
+          std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          activeCurves.push_back(optCurve);
+
+          exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
+        }
+      }
     }
-    vec.pop_back();
-		Reconstruction<2> opt;
-		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
+    else if(optRank == 3)
+    {
+      std::vector<Reconstruction<3>::Input> vec = {getPointData3(activeCurve,subdivisionPlaces[0])};
+      for(float i = 1; i <= segments; ++i)
+      {
+        vec.push_back(getPointData3(activeCurve, subdivisionPlaces[i]));
+        vec.push_back(getPointData3(activeCurve, subdivisionPlaces[i]));
+      }
+      vec.pop_back();
 
-		std::vector<Reconstruction<2>::Result> res = opt.optimize(optTarget, vec, dump);
+      if(optExtra == 0)
+      {
+    		Reconstruction<3,0> opt;
 
+    		std::vector<Reconstruction<3,0>::Result> res = opt.optimize(optTarget, vec, dump);
 
-        std::cerr << "Debug: " << std::endl;
-          for(int i=0;i<12;++i) std::cerr << (*dump)[i] << std::endl;
+        activeCurves.clear();
+        for(size_t i=0;i<res.size();++i)
+    		{
+          Curve::Ptr optCurve = opt.createResultCurve(res[i]);
+          std::cerr << optCurve->about() << std::endl;
+          std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          activeCurves.push_back(optCurve);
 
-    activeCurves.clear();
-    for(size_t i=0;i<res.size();++i)
-		{
-      Curve::Ptr optCurve = opt.createResultCurve(res[i]);
-      std::cerr << optCurve->about() << std::endl;
-      std::cerr << "Norm: " << res[i].second[0] << std::endl;
-      activeCurves.push_back(optCurve);
+          exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
+        }
+      }
+      else if(optExtra == 1)
+      {
+    		Reconstruction<3,1> opt;
 
-      exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
+    		std::vector<Reconstruction<3,1>::Result> res = opt.optimize(optTarget, vec, dump);
+
+        activeCurves.clear();
+        for(size_t i=0;i<res.size();++i)
+    		{
+          Curve::Ptr optCurve = opt.createResultCurve(res[i]);
+          std::cerr << optCurve->about() << std::endl;
+          std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          activeCurves.push_back(optCurve);
+
+          exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
+        }
+      }
+      else if(optExtra == 2)
+      {
+    		Reconstruction<3,2> opt;
+
+    		std::vector<Reconstruction<3,2>::Result> res = opt.optimize(optTarget, vec, dump);
+
+        activeCurves.clear();
+        for(size_t i=0;i<res.size();++i)
+    		{
+          Curve::Ptr optCurve = opt.createResultCurve(res[i]);
+          std::cerr << optCurve->about() << std::endl;
+          std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          activeCurves.push_back(optCurve);
+
+          exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
+        }
+      }
     }
+
+    std::cerr << "Debug: " << std::endl;
+      for(int i=0;i<12;++i) std::cerr << (*dump)[i] << std::endl;
+
     multipleCurves = true;
 
     makeOpt = false;
@@ -409,15 +540,15 @@ void CMyApp::Render()
       static const std::vector<std::string> names = {"curvature", "curvatureD", "const_velocity"};
       ImGui::Combo("Optimization target", &item, "curvature\0derivative of curvature\0constant velocity\0\0");
       optTarget = names[item];
-      if(ImGui::Button("Optimize (deg3)", ImVec2(0,0)))
+      static int cont = 1;
+      ImGui::Combo("Continuity", &cont, "1\0""2\0""3\0\0");
+      static int extra = 0;
+      ImGui::Combo("Extra points", &extra, "0\0""1\0""2\0\0");
+      if(ImGui::Button("Optimize", ImVec2(0,0)))
       {
         makeOpt = true;
-        optRank = 1;
-      }
-      if(ImGui::Button("Optimize (deg5)", ImVec2(0,0)))
-      {
-        makeOpt = true;
-        optRank = 2;
+        optRank = cont+1;
+        optExtra = extra;
       }
   }
   if (ImGui::CollapsingHeader("Camera settings"))

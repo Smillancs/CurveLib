@@ -81,6 +81,7 @@ protected:
   bool opt = false;
   bool makeOpt = false;
   int optRank = 0;
+  int optExtra = 0;
   std::string optTarget = "curvatureD";
 
   int segments = 1;
