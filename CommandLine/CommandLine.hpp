@@ -279,7 +279,7 @@ bool CommandLine::runTest(std::stringstream& cmd)
 
 
 		std::vector<Reconstruction<2>::Input> vec = {getPointData2(ExampleHandler::getP(3),0), getPointData2(ExampleHandler::getP(3),1)};
-		Reconstruction<2> opt;
+		Reconstruction<2> opt(false);
 		std::shared_ptr<std::vector<float>> dump = std::shared_ptr<std::vector<float>>(new std::vector<float>(100));
 
 		auto start = std::chrono::high_resolution_clock::now();

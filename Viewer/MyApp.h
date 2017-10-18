@@ -83,6 +83,7 @@ protected:
   int optRank = 0;
   int optExtra = 0;
   std::string optTarget = "curvatureD";
+  bool infnorm = false;
 
   int segments = 1;
 

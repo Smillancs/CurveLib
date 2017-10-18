@@ -38,6 +38,8 @@ layout(std430, binding = 2) buffer debugInfo
 	float data[100];
 } dump;
 
+#define _have_dump
+
 #incl ../Assets/BezierEval.glsl
 
 #incl ../Assets/GeomInvariant.glsl
@@ -56,6 +58,8 @@ subroutine ( GeomInvariantEval ) float const_velocity(vec3 data[max_length], int
 
 subroutine uniform GeomInvariantEval Eval;
 
+uniform bool infnorm = false;
+
 // Gauss–Legendre quadrature formula
 const float legendre_coeffs[20] = float[20](0.00880700357, 0.0203007149, 0.03133602417, 0.04163837079, 0.05096505991, 0.05909726598, 0.06584431922, 0.07104805466, 0.07458649324, 0.07637669357, 0.07637669357, 0.07458649324, 0.07104805466, 0.06584431922, 0.05909726598, 0.05096505991, 0.04163837079, 0.03133602417, 0.0203007149, 0.00880700357);
 const float legendre_roots[20]  = float[20](0.003435700407, 0.01801403636, 0.04388278587, 0.08044151409, 0.1268340468, 0.1819731596, 0.244566499, 0.3131469556, 0.3861070744, 0.4617367394, 0.5382632606, 0.6138929256, 0.6868530444, 0.755433501, 0.8180268404, 0.8731659532, 0.9195584859, 0.9561172141, 0.9819859636, 0.9965642996);
@@ -67,13 +71,26 @@ float integral2(vec3 points[max_length])
 {
 	float s = 0.f;
 
-	for(int i = 0; i < 20; ++i)
+	for(int i = 0; i < 10; ++i)
 	{
-		float val = Eval(points, point_num, legendre_roots[i]);
-		s += val * val * legendre_coeffs[i];
+		float val = Eval(points, point_num, lobatto_roots[i]);
+		s += val * val * v(points, point_num, lobatto_roots[i]) * v(points, point_num, lobatto_roots[i]) * lobatto_coeffs[i];
 	}
 
 	return sqrt(s);
+}
+
+float maxvalue(vec3 points[max_length])
+{
+  float mx = 0.f;
+
+  for(int i = 1; i < 1000; ++i)
+  {
+    float val = abs(Eval(points, point_num, i/1000.f));
+    if(val > mx) mx = val;
+  }
+
+  return mx;
 }
 
 float[(2*continuity+2)*3] matmul(float pinverse[(2*continuity+2)*(2*continuity+2)], float pointdata[(2*continuity+2)*3])
@@ -146,14 +163,14 @@ vec3[point_num] calculateControlPoints(vec3 start[continuity+1], vec3 end[contin
   return controlPoints;
 }
 
-#define ITERATIONS 100
+#define ITERATIONS 10
 
 vec3 points[point_num];
 shared float freedoms[freedom];
 shared float integrals[5*5*9];
 shared float d[freedom];
 shared float dd[freedom*freedom];
-shared float step[freedom];
+shared float newton_step[freedom];
 shared Result positions[ITERATIONS+1];
 
 void main()
@@ -165,7 +182,7 @@ void main()
   uint threadXY = threadX * 5 + threadY;
 	if(threadXY == 0 && threadZ == 0)
 	{
-		for(int i=0;i < 2*continuity;++i) freedoms[i] = 1;
+		for(int i=0;i < 2*continuity;++i) freedoms[i] = 1; // TODO
     for(int i=2*continuity;i < freedom;++i) freedoms[i] = 0;
     /*for(int i=0;i < 3;++i) dump.data[6*id+i] = inBuf.data[2*id].p[i];
     for(int i=0;i < 3;++i) dump.data[6*id+3+i] = inBuf.data[2*id+1].p[i];*/
@@ -189,7 +206,10 @@ void main()
     vec3 d0 = freedoms_local[0] * inBuf.data[2*id].e.xyz;
     vec3 d1 = freedoms_local[1] * inBuf.data[2*id+1].e.xyz;
 		points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1), extras);
-		integrals[threadXY*9+threadZ] = integral2(points);
+    if(infnorm)
+		  integrals[threadXY*9+threadZ] = maxvalue(points);
+    else
+		  integrals[threadXY*9+threadZ] = integral2(points);
 
 		barrier();
 
@@ -212,13 +232,13 @@ void main()
       //for(int i=0;i < 9;++i) dump.data[i] = integrals[i];
       barrier();
       if(threadXY == 0)
-  			step = linsolve(dd,d);
+  			newton_step = linsolve(dd,d);
       barrier();
 
-      /*dump.data[6] = step[0];
-      dump.data[7] = step[1];*/
+      /*dump.data[6] = newton_step[0];
+      dump.data[7] = newton_step[1];*/
       if(threadY == 0)
-        freedoms[threadX] -= step[threadX];
+        freedoms[threadX] -= newton_step[threadX];
       barrier();
       if(threadXY == 0)
       {
@@ -241,13 +261,17 @@ void main()
 		points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1), extras);
     for(int j=0;j < point_num;++j)
 		   positions[ITERATIONS].points[j] = points[j];
-		positions[ITERATIONS].norm = integral2(points);
+     if(infnorm)
+  		  positions[ITERATIONS].norm = maxvalue(points);
+     else
+  		  positions[ITERATIONS].norm = integral2(points);
 
 		int min = 0;
+    dump.data[0] = positions[0].norm;
 		for(int i=1;i<=ITERATIONS;++i)
 		{
 			if(positions[i].norm < positions[min].norm) min = i;
-      //dump.data[i] = positions[i].norm;
+      dump.data[i] = positions[i].norm;
 		}
 
     //if(id==1) for(int i=0;i < 12;++i) dump.data[i] = positions[min].points[i/3][i%3];

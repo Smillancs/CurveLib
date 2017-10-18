@@ -200,7 +200,7 @@ void CMyApp::Update()
 
       if(optExtra == 0)
       {
-    		Reconstruction<1,0> opt;
+    		Reconstruction<1,0> opt(infnorm);
 
     		std::vector<Reconstruction<1,0>::Result> res = opt.optimize(optTarget, vec, dump);
 
@@ -217,7 +217,7 @@ void CMyApp::Update()
       }
       else if(optExtra == 1)
       {
-    		Reconstruction<1,1> opt;
+    		Reconstruction<1,1> opt(infnorm);
 
     		std::vector<Reconstruction<1,1>::Result> res = opt.optimize(optTarget, vec, dump);
 
@@ -234,7 +234,7 @@ void CMyApp::Update()
       }
       else if(optExtra == 2)
       {
-    		Reconstruction<1,2> opt;
+    		Reconstruction<1,2> opt(infnorm);
 
     		std::vector<Reconstruction<1,2>::Result> res = opt.optimize(optTarget, vec, dump);
 
@@ -262,7 +262,7 @@ void CMyApp::Update()
 
       if(optExtra == 0)
       {
-    		Reconstruction<2,0> opt;
+    		Reconstruction<2,0> opt(infnorm);
 
     		std::vector<Reconstruction<2,0>::Result> res = opt.optimize(optTarget, vec, dump);
 
@@ -279,7 +279,7 @@ void CMyApp::Update()
       }
       else if(optExtra == 1)
       {
-    		Reconstruction<2,1> opt;
+    		Reconstruction<2,1> opt(infnorm);
 
     		std::vector<Reconstruction<2,1>::Result> res = opt.optimize(optTarget, vec, dump);
 
@@ -296,7 +296,7 @@ void CMyApp::Update()
       }
       else if(optExtra == 2)
       {
-    		Reconstruction<2,2> opt;
+    		Reconstruction<2,2> opt(infnorm);
 
     		std::vector<Reconstruction<2,2>::Result> res = opt.optimize(optTarget, vec, dump);
 
@@ -324,7 +324,7 @@ void CMyApp::Update()
 
       if(optExtra == 0)
       {
-    		Reconstruction<3,0> opt;
+    		Reconstruction<3,0> opt(infnorm);
 
     		std::vector<Reconstruction<3,0>::Result> res = opt.optimize(optTarget, vec, dump);
 
@@ -341,7 +341,7 @@ void CMyApp::Update()
       }
       else if(optExtra == 1)
       {
-    		Reconstruction<3,1> opt;
+    		Reconstruction<3,1> opt(infnorm);
 
     		std::vector<Reconstruction<3,1>::Result> res = opt.optimize(optTarget, vec, dump);
 
@@ -358,7 +358,7 @@ void CMyApp::Update()
       }
       else if(optExtra == 2)
       {
-    		Reconstruction<3,2> opt;
+    		Reconstruction<3,2> opt(infnorm);
 
     		std::vector<Reconstruction<3,2>::Result> res = opt.optimize(optTarget, vec, dump);
 
@@ -547,6 +547,9 @@ void CMyApp::Render()
       ImGui::Combo("Continuity", &cont, "1\0""2\0""3\0\0");
       static int extra = 0;
       ImGui::Combo("Extra points", &extra, "0\0""1\0""2\0\0");
+      static int norm = 0;
+      ImGui::Combo("Norm", &norm, "2-norm\0infinity norm\0\0");
+      infnorm = norm == 1;
       if(ImGui::Button("Optimize", ImVec2(0,0)))
       {
         makeOpt = true;

@@ -18,6 +18,7 @@ float binomial(int n, int k)
 
 float Bernstein(int n, int i, float t)
 {
+  if(i == 0 && t == 0 || i == n && t == 1) return 1;
 	return binomial(n,i)*pow(t,i)*pow(1.0-t,n-i);
 }
 
@@ -73,7 +74,7 @@ vec3 AllBernstein(vec3 points[max_length], float u, int n)
 		}
 		B[j] = saved;
 	}
-	
+
 	vec3 ret = vec3(0,0,0);
 	for (int i=0; i<n; ++i)
 	{

@@ -95,12 +95,13 @@ public:
 
 	std::vector<Result> optimize(const std::string& targetFunction, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
 
-	Reconstruction();
+	Reconstruction(bool infnorm);
 
 	Curve::Ptr createResultCurve(const Result& res);
 
 protected:
 	gShaderProgram program;
+  bool infnorm = false;
 };
 
 template <int continuity, int extra_points>
@@ -111,6 +112,7 @@ std::vector<typename Reconstruction<continuity,extra_points>::Result> Reconstruc
 
   // Set target function
   program.SetSubroutine(GL_COMPUTE_SHADER, "Eval", targetFunction.c_str());
+  program.SetUniform("infnorm", infnorm);
 
 	// Create and bind input buffer
 	gBuffer inBuf(GL_SHADER_STORAGE_BUFFER, input.size() * sizeof(Reconstruction<continuity,extra_points>::Input), input.data(), GL_STATIC_DRAW);
@@ -155,12 +157,13 @@ std::vector<typename Reconstruction<continuity,extra_points>::Result> Reconstruc
 }
 
 template <int continuity, int extra_points>
-Reconstruction<continuity,extra_points>::Reconstruction()
+Reconstruction<continuity,extra_points>::Reconstruction(bool infnorm)
 {
   std::string filename = "../Assets/reconstruction"+std::to_string(continuity)+(extra_points>0?"_"+std::to_string(extra_points):"")+".glsl";
   program.SetVerbose(true);
 	program.AttachShader(GL_COMPUTE_SHADER, filename.c_str());
 	program.LinkProgram();
+  this->infnorm = infnorm;
 }
 
 template <int continuity, int extra_points>
