@@ -8,7 +8,7 @@ const int point_num = (2*continuity+1)+1+extra_points;
 const int max_length = point_num;
 const int freedom = <?php $freedom = 2*$argv[1] + 3*$extra; print $freedom; ?>;
 
-layout (local_size_x = <?php print $freedom; ?>, local_size_y = <?php print $freedom; ?>, local_size_z = 9) in;
+layout (local_size_x = <?php print 1; ?>, local_size_y = <?php print 1; ?>, local_size_z = 1) in;
 
 <?php
 if($argv[1]==1){?>
@@ -40,6 +40,11 @@ struct ReconstructionData3
 };
 
 <?php } ?>
+
+struct status
+{
+  float freedoms[freedom];
+};
 
 struct Result
 {
@@ -130,34 +135,38 @@ float[(2*continuity+2)*3] matmul(float pinverse[(2*continuity+2)*(2*continuity+2
   return res;
 }
 
-float[freedom] linsolve(float mat[freedom*freedom], float vec[freedom])
+<?php function genLinsolve($size){ ?>
+float[<?php print $size; ?>] linsolve(float mat[<?php print $size*$size; ?>], float vec[<?php print $size; ?>])
 {
-  for(int k=0;k < freedom;++k)
+  for(int k=0;k < <?php print $size; ?>;++k)
   {
-    for(int i=k+1;i < freedom;++i)
+    for(int i=k+1;i < <?php print $size; ?>;++i)
     {
-      float f = mat[i*freedom+k] / mat[k*freedom+k];
-      for(int j=k+1;j < freedom;++j)
+      float f = mat[i*<?php print $size; ?>+k] / mat[k*<?php print $size; ?>+k];
+      for(int j=k+1;j < <?php print $size; ?>;++j)
       {
-        mat[i*freedom+j] -= mat[k*freedom+j] * f;
+        mat[i*<?php print $size; ?>+j] -= mat[k*<?php print $size; ?>+j] * f;
       }
       vec[i] -= vec[k]*f;
-      mat[i*freedom+k] = 0;
+      mat[i*<?php print $size; ?>+k] = 0;
     }
   }
 
-  for(int i=freedom-1;i>=0;--i)
+  for(int i=<?php print $size; ?>-1;i>=0;--i)
   {
-    vec[i] /= mat[i*freedom+i];
-    mat[i*freedom+i] = 1;
+    vec[i] /= mat[i*<?php print $size; ?>+i];
+    mat[i*<?php print $size; ?>+i] = 1;
     for(int j=i-1;j>=0;--j)
     {
-      vec[j] -= mat[j*freedom+i] * vec[i];
-      mat[j*freedom+i] = 0;
+      vec[j] -= mat[j*<?php print $size; ?>+i] * vec[i];
+      mat[j*<?php print $size; ?>+i] = 0;
     }
   }
   return vec;
 }
+<?php }
+genLinsolve(2*$argv[1]);
+if($extra>0 && 2*$argv[1] != 3*$extra) genLinsolve(3*$extra); ?>
 
 <?php if($argv[1]==1){ ?>
 const float pinverse[(2*continuity+2)*(2*continuity+2)] = float[(2*continuity+2)*(2*continuity+2)](1,0,0,0, 1,1/3.0,0,0, 0,0,1,-1/3.0, 0,0,1,0);
@@ -166,6 +175,56 @@ const float pinverse[(2*continuity+2)*(2*continuity+2)] = float[(2*continuity+2)
 <?php }else if($argv[1]==3){ ?>
 const float pinverse[(2*continuity+2)*(2*continuity+2)] = float[(2*continuity+2)*(2*continuity+2)](1.0000,-0.0000,-0.0000,0.0000,0,0,0,0,1.0000,0.1429,-0.0000,0.0000,0,0,0,0,1.0000,0.2857,0.0238,0.0000,0,0,0,0,1.0000,0.4286,0.0714,0.0048,0,0,0,0,0,0,0,0,1.0000,-0.4286,0.0714,-0.0048,0,0,0,0,1.0000,-0.2857,0.0238,-0.0000,0,0,0,0,1.0000,-0.1429,0.0000,-0.0000,0,0,0,0,1.0000,-0.0000,0.0000,-0.0000);
 <?php } ?>
+
+vec3[continuity+1] startPointDerivatives(float freedoms[freedom])
+{
+  uint id = gl_WorkGroupID.x;
+<?php
+if($argv[1] == 1)
+{ ?>
+  vec3 d0 = freedoms[0] * inBuf.data[2*id].e;
+	return vec3[continuity+1](inBuf.data[2*id].p, d0);
+<?php }
+else if($argv[1] == 2)
+{ ?>
+  vec3 d0 = freedoms[0] * inBuf.data[2*id].e;
+  vec3 dd0 = freedoms[2] * inBuf.data[2*id].e + inBuf.data[2*id].K * freedoms[0] * freedoms[0] * inBuf.data[2*id].n;
+  return vec3[continuity+1](inBuf.data[2*id].p, d0, dd0);
+<?php }
+else if($argv[1] == 3)
+{ ?>
+  vec3 d0 = freedoms[0] * inBuf.data[2*id].e;
+  vec3 dd0 = freedoms[2] * inBuf.data[2*id].e + inBuf.data[2*id].K * freedoms[0] * freedoms[0] * inBuf.data[2*id].n;
+  vec3 b0 = cross(inBuf.data[2*id].e, inBuf.data[2*id].n);
+  vec3 ddd0 = freedoms[4] * inBuf.data[2*id].e + (3*freedoms[0]*freedoms[2]*inBuf.data[2*id].K + freedoms[0] * freedoms[0] * freedoms[0] * inBuf.data[2*id].dK) * inBuf.data[2*id].n + freedoms[0] * freedoms[0] * freedoms[0] * inBuf.data[2*id].K * inBuf.data[2*id].T * b0;
+  return vec3[continuity+1](inBuf.data[2*id].p.xyz, d0, dd0, ddd0);
+<?php } ?>
+}
+
+vec3[continuity+1] endPointDerivatives(float freedoms[freedom])
+{
+  uint id = gl_WorkGroupID.x;
+<?php
+if($argv[1] == 1)
+{ ?>
+  vec3 d1 = freedoms[1] * inBuf.data[2*id+1].e;
+	return vec3[continuity+1](inBuf.data[2*id+1].p, d1);
+<?php }
+else if($argv[1] == 2)
+{ ?>
+  vec3 d1 = freedoms[1] * inBuf.data[2*id+1].e;
+  vec3 dd1 = freedoms[3] * inBuf.data[2*id+1].e + inBuf.data[2*id+1].K * freedoms[1] * freedoms[1] * inBuf.data[2*id+1].n;
+  return vec3[continuity+1](inBuf.data[2*id+1].p, d1, dd1);
+<?php }
+else if($argv[1] == 3)
+{ ?>
+  vec3 d1 = freedoms[1] * inBuf.data[2*id+1].e;
+  vec3 dd1 = freedoms[3] * inBuf.data[2*id+1].e + inBuf.data[2*id+1].K * freedoms[1] * freedoms[1] * inBuf.data[2*id+1].n;
+  vec3 b1 = cross(inBuf.data[2*id+1].e, inBuf.data[2*id+1].n);
+  vec3 ddd1 = freedoms[5] * inBuf.data[2*id+1].e + (3*freedoms[1]*freedoms[3]*inBuf.data[2*id+1].K + freedoms[1] * freedoms[1] * freedoms[1] * inBuf.data[2*id+1].dK) * inBuf.data[2*id+1].n + freedoms[1] * freedoms[1] * freedoms[1] * inBuf.data[2*id+1].K * inBuf.data[2*id+1].T * b1;
+  return vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1, dd1, ddd1);
+<?php } ?>
+}
 
 vec3[point_num] calculateControlPoints(vec3 start[continuity+1], vec3 end[continuity+1]<?php if($extra>0){ ?>, vec3 extras[extra_points]<?php }?>)
 {
@@ -197,171 +256,236 @@ vec3[point_num] calculateControlPoints(vec3 start[continuity+1], vec3 end[contin
 
 #define ITERATIONS 10
 
-vec3 points[point_num];
-shared float freedoms[freedom];
-shared float integrals[<?php print $freedom; ?>*<?php print $freedom; ?>*9];
-shared float d[freedom];
-shared float dd[freedom*freedom];
-shared float newton_step[freedom];
-shared Result positions[ITERATIONS+1];
+float[freedom] optimizeNewton(float start[freedom], bool opt_points, out bool no_move)
+{
+	uint id = gl_WorkGroupID.x;
+  /*uint threadX = gl_LocalInvocationID.x;
+  uint threadY = gl_LocalInvocationID.y;
+	uint threadZ = gl_LocalInvocationID.z;
+  uint threadXY = threadX * <?php print $freedom; ?> + threadY;*/
+
+  float eps = 1e-3;
+  float min_dist = length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 100.0;
+  vec3 points[point_num];
+  float freedoms[freedom];
+
+  float d[2*continuity];
+  float dd[2*continuity*2*continuity];
+  float newton_step[2*continuity];
+<?php if($extra>0){ ?>
+  float _d[3*extra_points];
+  float _dd[3*extra_points*3*extra_points];
+  float _newton_step[3*extra_points];
+<?php } ?>
+  status _positions[ITERATIONS+1];
+  Result positions[ITERATIONS+1];
+
+  for(int i=0;i < freedom;++i) freedoms[i] = start[i];
+
+	for(int i=0;i < ITERATIONS;++i)
+	{
+    if(!opt_points){
+<?php if($extra>0){ ?>
+      vec3 extras[extra_points];
+      for(int j=0;j < extra_points;++j)
+        extras[j] = vec3(freedoms[2*continuity+3*j+0],freedoms[2*continuity+3*j+1],freedoms[2*continuity+3*j+2]);
+<?php } ?>
+      float integrals[9];
+      for(int x=0;x < 2*continuity;++x) for(int y=0;y < 2*continuity;++y){
+        for(int z=0;z < 9;++z){
+          float freedoms_local[freedom];
+          for(int j=0;j < freedom;++j)
+          {
+            if( j == x ) freedoms_local[j] = freedoms[j]+(int(z)%3-1)*eps;
+            else if( j == y ) freedoms_local[j] = freedoms[j]+(int(z)/3-1)*eps;
+            else freedoms_local[j] = freedoms[j];
+          }
+      	  points = calculateControlPoints(startPointDerivatives(freedoms_local), endPointDerivatives(freedoms_local)<?php if($extra>0){ ?>, extras<?php }?>);
+          if(infnorm)
+      		  integrals[z] = maxvalue(points);
+          else
+      		  integrals[z] = integral2(points);
+
+          if(x == 0 && y == 0 && z == 4)
+          {
+            for(int j=0;j < point_num;++j)
+      			   positions[i].points[j] = points[j];
+      			positions[i].norm = integrals[4];
+            _positions[i].freedoms = freedoms;
+          }
+
+        }
+        d[x] = (integrals[5]-integrals[3])/(2*eps);
+        if(x == y) dd[x*2*continuity+y] = (integrals[5] - 2*integrals[4] + integrals[3])/(eps*eps);
+        else       dd[x*2*continuity+y] = ((integrals[8]-integrals[6])-(integrals[2]-integrals[0]))/(4*eps*eps);
+      }
+      newton_step = linsolve(dd,d);
+      for(int x=0;x < 2*continuity;++x)
+        freedoms[x] -= newton_step[x];
+
+      if(freedoms[0] < min_dist) freedoms[0] = min_dist;
+      if(freedoms[1] < min_dist) freedoms[1] = min_dist;
+
+      float n = 0.0;
+      for(int j=0;j < 2*continuity;++j)
+      {
+        n += d[j]*d[j];
+      }
+      if(n < eps) break;
+    }
+<?php if($extra>0){ ?>
+    else{
+      float integrals[9];
+      for(int x=2*continuity;x < freedom;++x) for(int y=2*continuity;y < freedom;++y){
+        for(int z=0;z < 9;++z){
+          float freedoms_local[freedom];
+          for(int j=0;j < freedom;++j)
+          {
+            if( j == x ) freedoms_local[j] = freedoms[j]+(int(z)%3-1)*eps;
+            else if( j == y ) freedoms_local[j] = freedoms[j]+(int(z)/3-1)*eps;
+            else freedoms_local[j] = freedoms[j];
+          }
+          vec3 extras[extra_points];
+          for(int j=0;j < extra_points;++j)
+            extras[j] = vec3(freedoms_local[2*continuity+3*j+0],freedoms_local[2*continuity+3*j+1],freedoms_local[2*continuity+3*j+2]);
+          points = calculateControlPoints(startPointDerivatives(freedoms_local), endPointDerivatives(freedoms_local), extras);
+          if(infnorm)
+      		  integrals[z] = maxvalue(points);
+          else
+      		  integrals[z] = integral2(points);
+
+          if(x == 2*continuity && y == 2*continuity && z == 4)
+          {
+            for(int j=0;j < point_num;++j)
+      			   positions[i].points[j] = points[j];
+      			positions[i].norm = integrals[4];
+            _positions[i].freedoms = freedoms;
+          }
+        }
+        _d[x] = (integrals[5]-integrals[3])/(2*eps);
+        if(x == y) _dd[x*2*continuity+y] = (integrals[5] - 2*integrals[4] + integrals[3])/(eps*eps);
+        else       _dd[x*2*continuity+y] = ((integrals[8]-integrals[6])-(integrals[2]-integrals[0]))/(4*eps*eps);
+      }
+      _newton_step = linsolve(_dd,_d);
+      for(int x=0;x < 3*extra_points;++x)
+        freedoms[x+2*continuity] -= _newton_step[x];
+
+      if(freedoms[0] < min_dist) freedoms[0] = min_dist;
+      if(freedoms[1] < min_dist) freedoms[1] = min_dist;
+
+      float n = 0.0;
+      for(int j=0;j < 3*extra_points;++j)
+      {
+        n += _d[j]*_d[j];
+      }
+      if(n < eps) break;
+    }
+<?php } ?>
+  }
+
+<?php if($extra>0){ ?>
+  vec3 extras[extra_points];
+  for(int j=0;j < extra_points;++j)
+    extras[j] = vec3(freedoms[2*continuity+3*j+0],freedoms[2*continuity+3*j+1],freedoms[2*continuity+3*j+2]);
+<?php } ?>
+  points = calculateControlPoints(startPointDerivatives(freedoms), endPointDerivatives(freedoms)<?php if($extra>0){ ?>, extras<?php }?>);
+  for(int j=0;j < point_num;++j)
+     positions[ITERATIONS].points[j] = points[j];
+  if(infnorm)
+  	positions[ITERATIONS].norm = maxvalue(points);
+  else
+    positions[ITERATIONS].norm = integral2(points);
+  _positions[ITERATIONS].freedoms = freedoms;
+
+  int minimum = 0;
+  //dump.data[0] = positions[0].norm;
+  for(int i=1;i<=ITERATIONS;++i)
+  {
+  	if(!isnan(positions[i].norm) && positions[i].norm < positions[minimum].norm) minimum = i;
+    //dump.data[i] = positions[i].norm;
+  }
+  status _current;
+  _current = _positions[minimum];
+  //current = positions[minimum];
+  float n = 0.f;
+  for(int i=0;i < freedom;++i)
+  {
+    n += pow(start[i]-_current.freedoms[i], 2);
+  }
+  n = sqrt(n);
+  no_move = n < eps;
+  return _current.freedoms;
+}
+
+//shared float freedoms[freedom];
 
 void main()
 {
 	uint id = gl_WorkGroupID.x;
-  uint threadX = gl_LocalInvocationID.x;
+  /*uint threadX = gl_LocalInvocationID.x;
   uint threadY = gl_LocalInvocationID.y;
 	uint threadZ = gl_LocalInvocationID.z;
-  uint threadXY = threadX * <?php print $freedom; ?> + threadY;
-	if(threadXY == 0 && threadZ == 0)
-	{
-		for(int i=0;i < 2*continuity;++i) freedoms[i] = 1; // TODO
-    for(int i=2*continuity;i < freedom;++i) freedoms[i] = 0;
-    /*for(int i=0;i < 3;++i) dump.data[6*id+i] = inBuf.data[2*id].p[i];
-    for(int i=0;i < 3;++i) dump.data[6*id+3+i] = inBuf.data[2*id+1].p[i];*/
-	}
-	float eps = 1e-3;
-  float min_dist = length(abs(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz)) / 100;
-  barrier();
+  uint threadXY = threadX * <?php print $freedom; ?> + threadY;*/
+  vec3 points[point_num];
+  float _start[freedom];
+  float _current[freedom];
+  Result current;
 
-	for(int i=0;i < ITERATIONS;++i)
-	{
-    float freedoms_local[freedom];
-    for(int j=0;j < freedom;++j)
-    {
-      if( j == threadX ) freedoms_local[j] = freedoms[j]+(int(threadZ)%3-1)*eps;
-      else if( j == threadY ) freedoms_local[j] = freedoms[j]+(int(threadZ)/3-1)*eps;
-      else freedoms_local[j] = freedoms[j];
-    }
+	for(int i=0;i < 2*continuity;++i) _start[i] = length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 5;
+  for(int i=2*continuity;i < freedom;++i) _start[i] = 0;
 <?php if($extra>0){ ?>
-    vec3 extras[extra_points];
-    for(int j=0;j < extra_points;++j)
-      extras[j] = vec3(freedoms_local[2*continuity+3*j+0],freedoms_local[2*continuity+3*j+1],freedoms_local[2*continuity+3*j+2]);
-<?php }
-if($argv[1] == 1)
-{ ?>
-    vec3 d0 = freedoms_local[0] * inBuf.data[2*id].e.xyz;
-    vec3 d1 = freedoms_local[1] * inBuf.data[2*id+1].e.xyz;
-		points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1)<?php if($extra>0){ ?>, extras<?php }?>);
-<?php }
-else if($argv[1] == 2)
-{ ?>
-    vec3 d0 = freedoms_local[0] * inBuf.data[2*id].e.xyz;
-    vec3 d1 = freedoms_local[1] * inBuf.data[2*id+1].e.xyz;
-    vec3 dd0 = freedoms_local[2] * inBuf.data[2*id].e.xyz + inBuf.data[2*id].K * freedoms_local[0] * freedoms_local[0] * inBuf.data[2*id].n;
-    vec3 dd1 = freedoms_local[3] * inBuf.data[2*id+1].e.xyz + inBuf.data[2*id+1].K * freedoms_local[1] * freedoms_local[1] * inBuf.data[2*id+1].n;
-    points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0, dd0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1, dd1)<?php if($extra>0){ ?>, extras<?php }?>);
-<?php }
-else if($argv[1] == 3)
-{ ?>
-    vec3 d0 = freedoms_local[0] * inBuf.data[2*id].e;
-    vec3 d1 = freedoms_local[1] * inBuf.data[2*id+1].e;
-    vec3 dd0 = freedoms_local[2] * inBuf.data[2*id].e + inBuf.data[2*id].K * freedoms_local[0] * freedoms_local[0] * inBuf.data[2*id].n;
-    vec3 dd1 = freedoms_local[3] * inBuf.data[2*id+1].e + inBuf.data[2*id+1].K * freedoms_local[1] * freedoms_local[1] * inBuf.data[2*id+1].n;
-    vec3 b0 = cross(inBuf.data[2*id].e, inBuf.data[2*id].n);
-    vec3 b1 = cross(inBuf.data[2*id+1].e, inBuf.data[2*id+1].n);
-    vec3 ddd0 = freedoms_local[4] * inBuf.data[2*id].e + (3*freedoms_local[0]*freedoms_local[2]*inBuf.data[2*id].K + freedoms_local[0] * freedoms_local[0] * freedoms_local[0] * inBuf.data[2*id].dK) * inBuf.data[2*id].n + freedoms_local[0] * freedoms_local[0] * freedoms_local[0] * inBuf.data[2*id].K * inBuf.data[2*id].T * b0;
-    vec3 ddd1 = freedoms_local[5] * inBuf.data[2*id+1].e + (3*freedoms_local[1]*freedoms_local[3]*inBuf.data[2*id+1].K + freedoms_local[1] * freedoms_local[1] * freedoms_local[1] * inBuf.data[2*id+1].dK) * inBuf.data[2*id+1].n + freedoms_local[1] * freedoms_local[1] * freedoms_local[1] * inBuf.data[2*id+1].K * inBuf.data[2*id+1].T * b1;
-    points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0, dd0, ddd0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1, dd1, ddd1)<?php if($extra>0){ ?>, extras<?php }?>);
+  vec3 extras[extra_points];
+  for(int j=0;j < extra_points;++j)
+    extras[j] = vec3(_start[2*continuity+3*j+0],_start[2*continuity+3*j+1],_start[2*continuity+3*j+2]);
 <?php } ?>
-    if(infnorm)
-		  integrals[threadXY*9+threadZ] = maxvalue(points);
-    else
-		  integrals[threadXY*9+threadZ] = integral2(points);
+	points = calculateControlPoints(startPointDerivatives(_start), endPointDerivatives(_start)<?php if($extra>0){ ?>, extras<?php }?>);
+  vec3 point_a = points[continuity];
+  vec3 point_b = points[point_num-continuity-1];
+  for(int i=0; i < extra_points; ++i)
+  {
+    vec3 p = ((extra_points-i)*point_a + (i+1)*point_b) / (extra_points+1);
+    _start[2*continuity+3*i+0] = p.x;
+    _start[2*continuity+3*i+1] = p.y;
+    _start[2*continuity+3*i+2] = p.z;
+  }
 
-		barrier();
-
-    if(threadXY == 0 && threadZ == 4)
-    {
-      for(int j=0;j < point_num;++j)
-			   positions[i].points[j] = points[j];
-			positions[i].norm = integrals[4];
-    }
-
-		if(threadZ == 0)
-
-		{
-      d[threadX] = (integrals[threadX*9+5]-integrals[threadX*9+3])/(2*eps);
-      if(threadX == threadY)
-        dd[threadXY] = (integrals[threadXY*9+5] - 2*integrals[threadXY*9+4] + integrals[threadXY*9+3])/(eps*eps);
-      else
-        dd[threadXY] = ((integrals[threadXY*9+8]-integrals[threadXY*9+6])-(integrals[threadXY*9+2]-integrals[threadXY*9+0]))/(4*eps*eps);
-
-      //for(int i=0;i < 9;++i) dump.data[i] = integrals[i];
-      barrier();
-      if(threadXY == 0)
-  			newton_step = linsolve(dd,d);
-      barrier();
-
-      /*dump.data[6] = newton_step[0];
-      dump.data[7] = newton_step[1];*/
-      if(threadY == 0)
-        freedoms[threadX] -= newton_step[threadX];
-      barrier();
-      if(threadXY == 0)
-      {
-        if(freedoms[0] < min_dist) freedoms[0] = min_dist;
-        if(freedoms[1] < min_dist) freedoms[1] = min_dist;
-      }
-
-		}
-    barrier();
-	}
-
-
-  if(threadXY == 0 && threadZ == 0)
-	{
+  bool finished = false;
+  int c = 0;
 <?php if($extra>0){ ?>
-    vec3 extras[extra_points];
-    for(int j=0;j < extra_points;++j)
-      extras[j] = vec3(freedoms[2*continuity+3*j+0],freedoms[2*continuity+3*j+1],freedoms[2*continuity+3*j+2]);
-<?php }
-if($argv[1] == 1)
-{ ?>
-    vec3 d0 = freedoms[0] * inBuf.data[2*id].e.xyz;
-    vec3 d1 = freedoms[1] * inBuf.data[2*id+1].e.xyz;
-		points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1)<?php if($extra>0){ ?>, extras<?php }?>);
-<?php }
-else if($argv[1] == 2)
-{ ?>
-    vec3 d0 = freedoms[0] * inBuf.data[2*id].e.xyz;
-    vec3 d1 = freedoms[1] * inBuf.data[2*id+1].e.xyz;
-    vec3 dd0 = freedoms[2] * inBuf.data[2*id].e.xyz + inBuf.data[2*id].K * freedoms[0] * freedoms[0] * inBuf.data[2*id].n;
-    vec3 dd1 = freedoms[3] * inBuf.data[2*id+1].e.xyz + inBuf.data[2*id+1].K * freedoms[1] * freedoms[1] * inBuf.data[2*id+1].n;
-    points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0, dd0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1, dd1)<?php if($extra>0){ ?>, extras<?php }?>);
-<?php }
-else if($argv[1] == 3)
-{ ?>
-    vec3 d0 = freedoms[0] * inBuf.data[2*id].e;
-    vec3 d1 = freedoms[1] * inBuf.data[2*id+1].e;
-    vec3 dd0 = freedoms[2] * inBuf.data[2*id].e + inBuf.data[2*id].K * freedoms[0] * freedoms[0] * inBuf.data[2*id].n;
-    vec3 dd1 = freedoms[3] * inBuf.data[2*id+1].e + inBuf.data[2*id+1].K * freedoms[1] * freedoms[1] * inBuf.data[2*id+1].n;
-    vec3 b0 = cross(inBuf.data[2*id].e, inBuf.data[2*id].n);
-    vec3 b1 = cross(inBuf.data[2*id+1].e, inBuf.data[2*id+1].n);
-    vec3 ddd0 = freedoms[4] * inBuf.data[2*id].e + (3*freedoms[0]*freedoms[2]*inBuf.data[2*id].K + freedoms[0] * freedoms[0] * freedoms[0] * inBuf.data[2*id].dK) * inBuf.data[2*id].n + freedoms[0] * freedoms[0] * freedoms[0] * inBuf.data[2*id].K * inBuf.data[2*id].T * b0;
-    vec3 ddd1 = freedoms[5] * inBuf.data[2*id+1].e + (3*freedoms[1]*freedoms[3]*inBuf.data[2*id+1].K + freedoms[1] * freedoms[1] * freedoms[1] * inBuf.data[2*id+1].dK) * inBuf.data[2*id+1].n + freedoms[1] * freedoms[1] * freedoms[1] * inBuf.data[2*id+1].K * inBuf.data[2*id+1].T * b1;
-    points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0, dd0, ddd0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1, dd1, ddd1)<?php if($extra>0){ ?>, extras<?php }?>);
+  _current = optimizeNewton(_start, true, finished);
 <?php } ?>
-    for(int j=0;j < point_num;++j)
-		   positions[ITERATIONS].points[j] = points[j];
-     if(infnorm)
-  		  positions[ITERATIONS].norm = maxvalue(points);
-     else
-  		  positions[ITERATIONS].norm = integral2(points);
+  while(true)
+  {
+    _start = _current;
 
-		int min = 0;
-    dump.data[0] = positions[0].norm;
-		for(int i=1;i<=ITERATIONS;++i)
-		{
-			if(positions[i].norm < positions[min].norm) min = i;
-      dump.data[i] = positions[i].norm;
-		}
+    _current = optimizeNewton(_start, false, finished);
 
-    //if(id==1) for(int i=0;i < 12;++i) dump.data[i] = positions[min].points[i/3][i%3];
+    if(finished) break;
 
-    for(int j=0;j < point_num;++j)
-       outBuf.data[id].points[j] = positions[min].points[j];
-		outBuf.data[id].norm = positions[min].norm;
+<?php if($extra>0){ ?>
+    _start = _current;
 
-		//dump.data[0] = 42;
-	}
+    _current = optimizeNewton(_start, true, finished);
+
+    if(finished || c >= 2) break;
+<?php } ?>
+    c++;
+  }
+  if(_current[0] < length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 100.0) _current[0] = length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 100.0;
+  if(_current[1] < length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 100.0) _current[1] = length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 100.0;
+  for(int i=0;i < freedom;++i) dump.data[i] = _current[i];
+  dump.data[11] = length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 100.0;
+<?php if($extra>0){ ?>
+  for(int j=0;j < extra_points;++j)
+    extras[j] = vec3(_current[2*continuity+3*j+0],_current[2*continuity+3*j+1],_current[2*continuity+3*j+2]);
+<?php } ?>
+  points = calculateControlPoints(startPointDerivatives(_current), endPointDerivatives(_current)<?php if($extra>0){ ?>, extras<?php }?>);
+  //if(id==1) for(int i=0;i < 12;++i) dump.data[i] = positions[min].points[i/3][i%3];
+
+  for(int j=0;j < point_num;++j)
+    outBuf.data[id].points[j] = points[j];
+	outBuf.data[id].norm = integral2(points);
+
+	//dump.data[0] = 42;
+
 }

@@ -8,13 +8,18 @@ const int point_num = (2*continuity+1)+1+extra_points;
 const int max_length = point_num;
 const int freedom = 2;
 
-layout (local_size_x = 2, local_size_y = 2, local_size_z = 9) in;
+layout (local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 
 struct ReconstructionData1
 {
   vec3 p;
   vec3 e;
+};
+
+struct status
+{
+  float freedoms[freedom];
 };
 
 struct Result
@@ -106,36 +111,50 @@ float[(2*continuity+2)*3] matmul(float pinverse[(2*continuity+2)*(2*continuity+2
   return res;
 }
 
-float[freedom] linsolve(float mat[freedom*freedom], float vec[freedom])
+float[2] linsolve(float mat[4], float vec[2])
 {
-  for(int k=0;k < freedom;++k)
+  for(int k=0;k < 2;++k)
   {
-    for(int i=k+1;i < freedom;++i)
+    for(int i=k+1;i < 2;++i)
     {
-      float f = mat[i*freedom+k] / mat[k*freedom+k];
-      for(int j=k+1;j < freedom;++j)
+      float f = mat[i*2+k] / mat[k*2+k];
+      for(int j=k+1;j < 2;++j)
       {
-        mat[i*freedom+j] -= mat[k*freedom+j] * f;
+        mat[i*2+j] -= mat[k*2+j] * f;
       }
       vec[i] -= vec[k]*f;
-      mat[i*freedom+k] = 0;
+      mat[i*2+k] = 0;
     }
   }
 
-  for(int i=freedom-1;i>=0;--i)
+  for(int i=2-1;i>=0;--i)
   {
-    vec[i] /= mat[i*freedom+i];
-    mat[i*freedom+i] = 1;
+    vec[i] /= mat[i*2+i];
+    mat[i*2+i] = 1;
     for(int j=i-1;j>=0;--j)
     {
-      vec[j] -= mat[j*freedom+i] * vec[i];
-      mat[j*freedom+i] = 0;
+      vec[j] -= mat[j*2+i] * vec[i];
+      mat[j*2+i] = 0;
     }
   }
   return vec;
 }
 
 const float pinverse[(2*continuity+2)*(2*continuity+2)] = float[(2*continuity+2)*(2*continuity+2)](1,0,0,0, 1,1/3.0,0,0, 0,0,1,-1/3.0, 0,0,1,0);
+
+vec3[continuity+1] startPointDerivatives(float freedoms[freedom])
+{
+  uint id = gl_WorkGroupID.x;
+  vec3 d0 = freedoms[0] * inBuf.data[2*id].e;
+	return vec3[continuity+1](inBuf.data[2*id].p, d0);
+}
+
+vec3[continuity+1] endPointDerivatives(float freedoms[freedom])
+{
+  uint id = gl_WorkGroupID.x;
+  vec3 d1 = freedoms[1] * inBuf.data[2*id+1].e;
+	return vec3[continuity+1](inBuf.data[2*id+1].p, d1);
+}
 
 vec3[point_num] calculateControlPoints(vec3 start[continuity+1], vec3 end[continuity+1])
 {
@@ -163,115 +182,154 @@ vec3[point_num] calculateControlPoints(vec3 start[continuity+1], vec3 end[contin
 
 #define ITERATIONS 10
 
-vec3 points[point_num];
-shared float freedoms[freedom];
-shared float integrals[2*2*9];
-shared float d[freedom];
-shared float dd[freedom*freedom];
-shared float newton_step[freedom];
-shared Result positions[ITERATIONS+1];
+float[freedom] optimizeNewton(float start[freedom], bool opt_points, out bool no_move)
+{
+	uint id = gl_WorkGroupID.x;
+  /*uint threadX = gl_LocalInvocationID.x;
+  uint threadY = gl_LocalInvocationID.y;
+	uint threadZ = gl_LocalInvocationID.z;
+  uint threadXY = threadX * 2 + threadY;*/
+
+  float eps = 1e-3;
+  float min_dist = length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 100.0;
+  vec3 points[point_num];
+  float freedoms[freedom];
+
+  float d[2*continuity];
+  float dd[2*continuity*2*continuity];
+  float newton_step[2*continuity];
+  status _positions[ITERATIONS+1];
+  Result positions[ITERATIONS+1];
+
+  for(int i=0;i < freedom;++i) freedoms[i] = start[i];
+
+	for(int i=0;i < ITERATIONS;++i)
+	{
+    if(!opt_points){
+      float integrals[9];
+      for(int x=0;x < 2*continuity;++x) for(int y=0;y < 2*continuity;++y){
+        for(int z=0;z < 9;++z){
+          float freedoms_local[freedom];
+          for(int j=0;j < freedom;++j)
+          {
+            if( j == x ) freedoms_local[j] = freedoms[j]+(int(z)%3-1)*eps;
+            else if( j == y ) freedoms_local[j] = freedoms[j]+(int(z)/3-1)*eps;
+            else freedoms_local[j] = freedoms[j];
+          }
+      	  points = calculateControlPoints(startPointDerivatives(freedoms_local), endPointDerivatives(freedoms_local));
+          if(infnorm)
+      		  integrals[z] = maxvalue(points);
+          else
+      		  integrals[z] = integral2(points);
+
+          if(x == 0 && y == 0 && z == 4)
+          {
+            for(int j=0;j < point_num;++j)
+      			   positions[i].points[j] = points[j];
+      			positions[i].norm = integrals[4];
+            _positions[i].freedoms = freedoms;
+          }
+
+        }
+        d[x] = (integrals[5]-integrals[3])/(2*eps);
+        if(x == y) dd[x*2*continuity+y] = (integrals[5] - 2*integrals[4] + integrals[3])/(eps*eps);
+        else       dd[x*2*continuity+y] = ((integrals[8]-integrals[6])-(integrals[2]-integrals[0]))/(4*eps*eps);
+      }
+      newton_step = linsolve(dd,d);
+      for(int x=0;x < 2*continuity;++x)
+        freedoms[x] -= newton_step[x];
+
+      if(freedoms[0] < min_dist) freedoms[0] = min_dist;
+      if(freedoms[1] < min_dist) freedoms[1] = min_dist;
+
+      float n = 0.0;
+      for(int j=0;j < 2*continuity;++j)
+      {
+        n += d[j]*d[j];
+      }
+      if(n < eps) break;
+    }
+  }
+
+  points = calculateControlPoints(startPointDerivatives(freedoms), endPointDerivatives(freedoms));
+  for(int j=0;j < point_num;++j)
+     positions[ITERATIONS].points[j] = points[j];
+  if(infnorm)
+  	positions[ITERATIONS].norm = maxvalue(points);
+  else
+    positions[ITERATIONS].norm = integral2(points);
+  _positions[ITERATIONS].freedoms = freedoms;
+
+  int minimum = 0;
+  //dump.data[0] = positions[0].norm;
+  for(int i=1;i<=ITERATIONS;++i)
+  {
+  	if(!isnan(positions[i].norm) && positions[i].norm < positions[minimum].norm) minimum = i;
+    //dump.data[i] = positions[i].norm;
+  }
+  status _current;
+  _current = _positions[minimum];
+  //current = positions[minimum];
+  float n = 0.f;
+  for(int i=0;i < freedom;++i)
+  {
+    n += pow(start[i]-_current.freedoms[i], 2);
+  }
+  n = sqrt(n);
+  no_move = n < eps;
+  return _current.freedoms;
+}
+
+//shared float freedoms[freedom];
 
 void main()
 {
 	uint id = gl_WorkGroupID.x;
-  uint threadX = gl_LocalInvocationID.x;
+  /*uint threadX = gl_LocalInvocationID.x;
   uint threadY = gl_LocalInvocationID.y;
 	uint threadZ = gl_LocalInvocationID.z;
-  uint threadXY = threadX * 2 + threadY;
-	if(threadXY == 0 && threadZ == 0)
-	{
-		for(int i=0;i < 2*continuity;++i) freedoms[i] = 1; // TODO
-    for(int i=2*continuity;i < freedom;++i) freedoms[i] = 0;
-    /*for(int i=0;i < 3;++i) dump.data[6*id+i] = inBuf.data[2*id].p[i];
-    for(int i=0;i < 3;++i) dump.data[6*id+3+i] = inBuf.data[2*id+1].p[i];*/
-	}
-	float eps = 1e-3;
-  float min_dist = length(abs(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz)) / 100;
-  barrier();
+  uint threadXY = threadX * 2 + threadY;*/
+  vec3 points[point_num];
+  float _start[freedom];
+  float _current[freedom];
+  Result current;
 
-	for(int i=0;i < ITERATIONS;++i)
-	{
-    float freedoms_local[freedom];
-    for(int j=0;j < freedom;++j)
-    {
-      if( j == threadX ) freedoms_local[j] = freedoms[j]+(int(threadZ)%3-1)*eps;
-      else if( j == threadY ) freedoms_local[j] = freedoms[j]+(int(threadZ)/3-1)*eps;
-      else freedoms_local[j] = freedoms[j];
-    }
-    vec3 d0 = freedoms_local[0] * inBuf.data[2*id].e.xyz;
-    vec3 d1 = freedoms_local[1] * inBuf.data[2*id+1].e.xyz;
-		points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1));
-    if(infnorm)
-		  integrals[threadXY*9+threadZ] = maxvalue(points);
-    else
-		  integrals[threadXY*9+threadZ] = integral2(points);
+	for(int i=0;i < 2*continuity;++i) _start[i] = length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 5;
+  for(int i=2*continuity;i < freedom;++i) _start[i] = 0;
+	points = calculateControlPoints(startPointDerivatives(_start), endPointDerivatives(_start));
+  vec3 point_a = points[continuity];
+  vec3 point_b = points[point_num-continuity-1];
+  for(int i=0; i < extra_points; ++i)
+  {
+    vec3 p = ((extra_points-i)*point_a + (i+1)*point_b) / (extra_points+1);
+    _start[2*continuity+3*i+0] = p.x;
+    _start[2*continuity+3*i+1] = p.y;
+    _start[2*continuity+3*i+2] = p.z;
+  }
 
-		barrier();
+  bool finished = false;
+  int c = 0;
+  while(true)
+  {
+    _start = _current;
 
-    if(threadXY == 0 && threadZ == 4)
-    {
-      for(int j=0;j < point_num;++j)
-			   positions[i].points[j] = points[j];
-			positions[i].norm = integrals[4];
-    }
+    _current = optimizeNewton(_start, false, finished);
 
-		if(threadZ == 0)
+    if(finished) break;
 
-		{
-      d[threadX] = (integrals[threadX*9+5]-integrals[threadX*9+3])/(2*eps);
-      if(threadX == threadY)
-        dd[threadXY] = (integrals[threadXY*9+5] - 2*integrals[threadXY*9+4] + integrals[threadXY*9+3])/(eps*eps);
-      else
-        dd[threadXY] = ((integrals[threadXY*9+8]-integrals[threadXY*9+6])-(integrals[threadXY*9+2]-integrals[threadXY*9+0]))/(4*eps*eps);
+    c++;
+  }
+  if(_current[0] < length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 100.0) _current[0] = length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 100.0;
+  if(_current[1] < length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 100.0) _current[1] = length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 100.0;
+  for(int i=0;i < freedom;++i) dump.data[i] = _current[i];
+  dump.data[11] = length(inBuf.data[2*id].p.xyz - inBuf.data[2*id+1].p.xyz) / 100.0;
+  points = calculateControlPoints(startPointDerivatives(_current), endPointDerivatives(_current));
+  //if(id==1) for(int i=0;i < 12;++i) dump.data[i] = positions[min].points[i/3][i%3];
 
-      //for(int i=0;i < 9;++i) dump.data[i] = integrals[i];
-      barrier();
-      if(threadXY == 0)
-  			newton_step = linsolve(dd,d);
-      barrier();
+  for(int j=0;j < point_num;++j)
+    outBuf.data[id].points[j] = points[j];
+	outBuf.data[id].norm = integral2(points);
 
-      /*dump.data[6] = newton_step[0];
-      dump.data[7] = newton_step[1];*/
-      if(threadY == 0)
-        freedoms[threadX] -= newton_step[threadX];
-      barrier();
-      if(threadXY == 0)
-      {
-        if(freedoms[0] < min_dist) freedoms[0] = min_dist;
-        if(freedoms[1] < min_dist) freedoms[1] = min_dist;
-      }
+	//dump.data[0] = 42;
 
-		}
-    barrier();
-	}
-
-
-  if(threadXY == 0 && threadZ == 0)
-	{
-    vec3 d0 = freedoms[0] * inBuf.data[2*id].e.xyz;
-    vec3 d1 = freedoms[1] * inBuf.data[2*id+1].e.xyz;
-		points = calculateControlPoints(vec3[continuity+1](inBuf.data[2*id].p.xyz, d0), vec3[continuity+1](inBuf.data[2*id+1].p.xyz, d1));
-    for(int j=0;j < point_num;++j)
-		   positions[ITERATIONS].points[j] = points[j];
-     if(infnorm)
-  		  positions[ITERATIONS].norm = maxvalue(points);
-     else
-  		  positions[ITERATIONS].norm = integral2(points);
-
-		int min = 0;
-    dump.data[0] = positions[0].norm;
-		for(int i=1;i<=ITERATIONS;++i)
-		{
-			if(positions[i].norm < positions[min].norm) min = i;
-      dump.data[i] = positions[i].norm;
-		}
-
-    //if(id==1) for(int i=0;i < 12;++i) dump.data[i] = positions[min].points[i/3][i%3];
-
-    for(int j=0;j < point_num;++j)
-       outBuf.data[id].points[j] = positions[min].points[j];
-		outBuf.data[id].norm = positions[min].norm;
-
-		//dump.data[0] = 42;
-	}
 }
