@@ -64,15 +64,20 @@
     const allBinomialImpl<N-1,N-1> prev;
     const int value = Binomial<N,0>::value;
   };
-  
+
   template<>
   class allBinomialImpl<0,0>
   {
     const int value = Binomial<0,0>::value;
   };
 
-  allBinomial<MAX_BINOMIAL_ORDER> binomialCoeff;
+  extern allBinomial<MAX_BINOMIAL_ORDER> binomialCoeff;
 
   // usage: binomialCoeff(5,2)
 //************************************
 //end of binomial coeff
+
+#include <functional>
+#include "Curve.hpp"
+
+double integrate(std::function<double(Curve&,double)> func, Curve::Ptr c, double a = 0, double b = 1);

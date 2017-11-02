@@ -20,6 +20,7 @@ Examples.cpp
 RandomCurve.hpp
 RandomCurve.cpp
 MathFunctions.hpp
+MathFunctions.cpp
 )
 
 

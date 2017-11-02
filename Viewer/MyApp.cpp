@@ -4,6 +4,7 @@
 #include "../GPUcompute/GeomOptimize.hpp"
 #include "../GPUcompute/Reconstruction.hpp"
 #include "../CurveLib/RandomCurve.hpp"
+#include "../CurveLib/MathFunctions.hpp"
 #include "../CurveLib/Utils.hpp"
 
 #include "../Imgui/imgui.h"
@@ -210,6 +211,8 @@ void CMyApp::Update()
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
           std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -227,6 +230,8 @@ void CMyApp::Update()
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
           std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -244,6 +249,8 @@ void CMyApp::Update()
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
           std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -272,6 +279,8 @@ void CMyApp::Update()
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
           std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -289,6 +298,8 @@ void CMyApp::Update()
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
           std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -306,6 +317,8 @@ void CMyApp::Update()
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
           std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -334,6 +347,8 @@ void CMyApp::Update()
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
           std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -351,6 +366,8 @@ void CMyApp::Update()
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
           std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -368,6 +385,8 @@ void CMyApp::Update()
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
           std::cerr << "Norm: " << res[i].second[0] << std::endl;
+          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
