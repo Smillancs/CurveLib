@@ -1,6 +1,7 @@
 #include "GeomInvariant.hpp"
 
 #include "Utils.hpp"
+#include <glm/gtx/rotate_vector.hpp>
 
 namespace GeomInv{
 
@@ -102,6 +103,8 @@ namespace GeomInv{
 		auto normed = (crossed != glm::dvec3(0,0,0))?
 			glm::normalize(crossed):
 			glm::dvec3(0,0,0);
+    if(normed == glm::dvec3(0,0,0)) normed = glm::normalize(glm::cross(e(c,t), glm::dvec3(0,0,1)));
+    if(normed == glm::dvec3(0,0,0)) normed = glm::normalize(glm::cross(e(c,t), glm::dvec3(0,1,0)));
 		return normed;
 	}
 
