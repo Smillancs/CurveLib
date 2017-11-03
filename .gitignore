@@ -1,5 +1,4 @@
 build/
-eigen/
 cmake/
 
 # Compiled Object files
