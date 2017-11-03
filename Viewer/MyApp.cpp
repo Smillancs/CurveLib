@@ -467,7 +467,7 @@ void CMyApp::Render()
 	axes.Off();
 
 	m_program_basic.Off();
-
+#ifndef _WIN32
   if(drawControlData)
   {
     glLineWidth(1);
@@ -507,7 +507,7 @@ void CMyApp::Render()
     glLineWidth(2);
     glPointSize(1);
   }
-
+#endif
 
   ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
   ImGui::SetNextWindowSize(ImVec2(300,300), ImGuiSetCond_FirstUseEver);
@@ -594,6 +594,7 @@ void CMyApp::Render()
   if (ImGui::CollapsingHeader("Draw control data (points and derivatives)"))
   {
       ImGui::Checkbox("draw", &drawControlData);
+	  ImGui::Text("(Windows unsupported)");
   }
 
 	ImGui::End();

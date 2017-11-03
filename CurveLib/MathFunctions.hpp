@@ -28,7 +28,7 @@
   template<int n, int k>
   struct Binomial
   {
-    static_assert(n >= k && k >= 0);
+    //static_assert(n >= k && k >= 0);
     const static int value = (Binomial<n-1,k-1>::value + Binomial<n-1,k>::value);
   };
 

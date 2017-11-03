@@ -40,12 +40,10 @@ if(WIN32)
 	include_directories(../eigen)
 	include_directories(../OGLPack/include)
 
-	find_library(GLEW_LIB NAME glew32s HINTS ${libdir})
-	find_library(OGL_LIB NAME OPENGL32 HINTS ${libdir})
+	find_library(GLEW_LIB NAME glew32 HINTS ${libdir})
 	find_library(GLU_LIB NAME GlU32)
+	find_library(OGL_LIB NAME opengl32)
 endif()
 
 
 target_link_libraries(CurveLib PUBLIC ${GLEW_LIB})
-target_link_libraries(CurveLib PUBLIC ${GLU_LIB})
-target_link_libraries(CurveLib PUBLIC ${OGL_LIB})

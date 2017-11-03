@@ -1,8 +1,6 @@
-OGLPack/
 build/
 eigen/
 cmake/
-OGLPack/include/
 
 # Compiled Object files
 *.slo
@@ -17,7 +15,6 @@ OGLPack/include/
 # Compiled Dynamic libraries
 *.so
 *.dylib
-*.dll
 
 # Fortran module files
 *.mod
@@ -27,7 +24,6 @@ OGLPack/include/
 *.lai
 *.la
 *.a
-*.lib
 
 # Executables
 *.exe

@@ -21,6 +21,10 @@
 
 #include <glm/gtc/matrix_access.hpp>
 
+#ifdef _WIN32
+#define sscanf sscanf_s
+#endif
+
 class CommandLine
 {
 public:

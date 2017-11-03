@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#undef main
 int main(int argc, char** argv)
 {
 	atexit([](){std::cout << "Press Enter to exit!"; std::cin.get(); });

@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <memory>
+#include <array>
 
 template<int N>
 struct ReconstructionData;
@@ -167,7 +168,7 @@ Reconstruction<continuity,extra_points>::Reconstruction(bool infnorm)
 }
 
 template <int continuity, int extra_points>
-Curve::Ptr Reconstruction<continuity,extra_points>::createResultCurve(const Reconstruction<continuity,extra_points>::Result& res)
+Curve::Ptr Reconstruction<continuity,extra_points>::createResultCurve(const typename Reconstruction<continuity,extra_points>::Result& res)
 {
   std::array<glm::vec3,(2*continuity+1)+1+extra_points> arr;
   std::transform(res.first.begin(), res.first.end(), arr.begin(), [](std::pair<glm::vec3,float> a){return a.first;});

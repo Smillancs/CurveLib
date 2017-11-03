@@ -4,6 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include <cassert>
+#include <functional>
 #include "glm/gtx/string_cast.hpp"
 
 #include "Curve.hpp"
