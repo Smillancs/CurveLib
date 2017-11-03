@@ -53,7 +53,6 @@ target_link_libraries(Viewer PUBLIC ${SDL2_image_LIB})
 target_link_libraries(Viewer PUBLIC CurveLib)
 target_link_libraries(Viewer PUBLIC GPUcompute)
 target_link_libraries(Viewer PUBLIC Imgui)
-SET_TARGET_PROPERTIES(Viewer PROPERTIES LINK_FLAGS "/link opengl32.lib")
 
 if(WIN32)
 	file(COPY ../OGLPack/bin/x86/glew32.dll DESTINATION ${CMAKE_BINARY_DIR}/Viewer)
