@@ -6,6 +6,7 @@ gBuffer.cpp
 GeomOptimize.hpp
 GeomOptimize.cpp
 Reconstruction.hpp
+Reconstruction_CPU.inl
 )
 
 

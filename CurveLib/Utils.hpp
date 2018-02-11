@@ -1,8 +1,10 @@
 #pragma once
 
+#include <array>
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <iostream>
 #include <cassert>
 #include <functional>
 #include "glm/gtx/string_cast.hpp"
@@ -64,3 +66,14 @@ inline bool assert_(bool statement)
 
 
 void exportCurveData(std::string filename, Curve::Ptr c, std::function<double(Curve&,double)> func, int n, int segmentNumber = 0);
+
+template<typename T, size_t N>
+void printArray(const std::array<T,N>& arr)
+{
+	std::cerr << "[ ";
+	for(auto it : arr)
+	{
+		std::cerr << it << ", ";
+	}
+	std::cerr << "] " << std::endl;
+}

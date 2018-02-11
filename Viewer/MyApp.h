@@ -19,6 +19,7 @@
 
 #include "../CurveLib/Examples.hpp"
 #include "../CurveLib/bezierCurve.h"
+#include "../CurveLib/GeomInvariant.hpp"
 #include "CurveRenderer.h"
 
 class CMyApp
@@ -82,7 +83,8 @@ protected:
   bool makeOpt = false;
   int optRank = 0;
   int optExtra = 0;
-  std::string optTarget = "curvatureD";
+  //std::string optTarget = "curvatureD";
+  std::function<double(Curve&,double)> optTarget = GeomInv::dK;
   bool infnorm = false;
 
   int segments = 1;
@@ -98,4 +100,6 @@ protected:
   bool drawControlData = false;
 
   std::vector<float> subdivisionPlaces = {0, 1};
+
+  bool cpu_opt = true;
 };

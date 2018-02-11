@@ -13,41 +13,59 @@
 #include <memory>
 #include <array>
 
-template<int N>
-struct ReconstructionData;
-
-template <>
-struct ReconstructionData<0>
+struct ReconstructionDataBase
 {
-  ReconstructionData(glm::vec3 a = glm::vec3(0)):p(a){}
-  glm::vec3 p; // position
+  const glm::vec3& p() const { throw("Unsupported curve reconstruction."); }
+  const glm::vec3& e() const { throw("Unsupported curve reconstruction."); }
+  const glm::vec3& n() const { throw("Unsupported curve reconstruction."); }
+  const float& K() const { throw("Unsupported curve reconstruction."); }
+  const float& T() const { throw("Unsupported curve reconstruction."); }
+  const float& dK(unsigned n) const { throw("Unsupported curve reconstruction."); }
+  const float& dT(unsigned n) const { throw("Unsupported curve reconstruction."); }
+};
+
+struct ReconstructionData0 : ReconstructionDataBase
+{
+  ReconstructionData0(glm::vec3 a = glm::vec3(0)):_p(a){}
+  const glm::vec3& p() const { return _p; }
+  glm::vec3& p()  { return _p; }
+protected:
+  glm::vec3 _p; // position
   float __pad;
 };
 
-template<>
-struct ReconstructionData<1> : ReconstructionData<0>
+struct ReconstructionData1 : ReconstructionData0
 {
-  ReconstructionData(glm::vec3 a = glm::vec3(0), glm::vec3 b = glm::vec3(0)):ReconstructionData<0>(a),e(b){}
-  glm::vec3 e; // tangent
+  ReconstructionData1(glm::vec3 a = glm::vec3(0), glm::vec3 b = glm::vec3(0)):ReconstructionData0(a),_e(b){}
+  const glm::vec3& e() const { return _e; }
+  glm::vec3& e()  { return _e; }
+protected:
+  glm::vec3 _e; // tangent
   float ___pad;
 };
 
-template<>
-struct ReconstructionData<2> : ReconstructionData<1>
+struct ReconstructionData2 : ReconstructionData1
 {
-  glm::vec3 n; // normal
-  float& K(){ return k; }
+  glm::vec3& n()  { return _n; }
+  const glm::vec3& n() const { return _n; }
+  float& K()  { return k; }
+  const float& K() const { return k; }
 protected:
+  glm::vec3 _n; // normal
   float k; // curvature
 };
 
 template<int N>
-struct ReconstructionData : ReconstructionData<2>
+struct ReconstructionData : ReconstructionData2
 {
-  float& K(){ return k; }
-  float& T(){ return t[0]; }
-  float& dK(unsigned n){ return n==0 ? k : dk[n-1]; }
-  float& dT(unsigned n){ return t[n]; }
+  float& K()  { return k; }
+  const float& K() const { return k; }
+  float& T()  { return t[0]; }
+  const float& T() const { return t[0]; }
+  float& dK(unsigned n)  { return n==0 ? k : dk[n-1]; }
+  const float& dK(unsigned n) const { return n==0 ? k : dk[n-1]; }
+  float& dT(unsigned n)  { return t[n]; }
+  const float& dT(unsigned n) const { return t[n]; }
 
 protected:
   std::array<float, N-2> dk; // differentiates of curvature
@@ -56,20 +74,27 @@ protected:
   float _____pad;
 };
 
+template<>
+struct ReconstructionData<0> : ReconstructionData0{};
+template<>
+struct ReconstructionData<1> : ReconstructionData1{};
+template<>
+struct ReconstructionData<2> : ReconstructionData2{};
+
 ReconstructionData<1> getPointData1(Curve::Ptr c, double t)
 {
   ReconstructionData<1> data;
-  data.p = c->f(t);
-  data.e = GeomInv::e(*c, t);
+  data.p() = c->f(t);
+  data.e() = GeomInv::e(*c, t);
   return data;
 }
 
 ReconstructionData<2> getPointData2(Curve::Ptr c, double t)
 {
   ReconstructionData<2> data;
-  data.p = c->f(t);
-  data.e = GeomInv::e(*c, t);
-  data.n = GeomInv::n(*c, t);
+  data.p() = c->f(t);
+  data.e() = GeomInv::e(*c, t);
+  data.n() = GeomInv::n(*c, t);
   data.K() = GeomInv::K(*c, t);
   return data;
 }
@@ -77,9 +102,9 @@ ReconstructionData<2> getPointData2(Curve::Ptr c, double t)
 ReconstructionData<3> getPointData3(Curve::Ptr c, double t)
 {
   ReconstructionData<3> data;
-  data.p = c->f(t);
-  data.e = GeomInv::e(*c, t);
-  data.n = GeomInv::n(*c, t);
+  data.p() = c->f(t);
+  data.e() = GeomInv::e(*c, t);
+  data.n() = GeomInv::n(*c, t);
   data.K() = GeomInv::K(*c, t);
   data.dK(1) = GeomInv::dK(*c, t);
   data.T() = GeomInv::T(*c, t);
@@ -93,12 +118,15 @@ public:
 	using Input = ReconstructionData<continuity>;
 
 	using Result = std::pair<std::array<std::pair<glm::vec3,float>,(2*continuity+1)+1+extra_points>, std::array<float,4>>;
+  using Result_cpu = std::pair<std::array<glm::vec3,(2*continuity+1)+1+extra_points>,float>;
 
-	std::vector<Result> optimize(const std::string& targetFunction, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
+  std::vector<Result> optimize(const std::string& targetFunction, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
+	std::vector<Result_cpu> optimize_cpu(std::function<double(Curve&,double)> func, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
 
 	Reconstruction(bool infnorm);
 
-	Curve::Ptr createResultCurve(const Result& res);
+  Curve::Ptr createResultCurve(const Result& res);
+	Curve::Ptr createResultCurve(const Result_cpu& res);
 
 protected:
 	gShaderProgram program;
@@ -127,9 +155,19 @@ std::vector<typename Reconstruction<continuity,extra_points>::Result> Reconstruc
 	gBuffer dump(GL_SHADER_STORAGE_BUFFER, 100 * sizeof(float), nullptr, GL_STATIC_READ);
 	dump.BindBufferBase(2);
 
+  GLuint queries[1];
+  GLuint timeElapsed = 0;
+  // Create a query object.
+  glGenQueries(1, queries);
+  // Query current timestamp 1
+  glBeginQuery(GL_TIME_ELAPSED, queries[0]);
 	// Start compute shader
 	program.DispatchCompute(input.size()/2, 1, 1);
 	program.MemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+  glEndQuery(GL_TIME_ELAPSED);
+  // See how much time the rendering of object i took in nanoseconds.
+  glGetQueryObjectuiv(queries[0], GL_QUERY_RESULT, &timeElapsed);
+  std::cerr << "Elapsed time (optimization): " << timeElapsed/1000000.0 << " ms" << std::endl;
 
 	// Extract results
 	typename Reconstruction<continuity,extra_points>::Result* ptr = (Reconstruction<continuity,extra_points>::Result*)outBuf.MapBufferRange(0, input.size() / 2 * sizeof(Reconstruction<continuity,extra_points>::Result), GL_MAP_READ_BIT);
@@ -162,8 +200,8 @@ Reconstruction<continuity,extra_points>::Reconstruction(bool infnorm)
 {
   std::string filename = "../Assets/reconstruction"+std::to_string(continuity)+(extra_points>0?"_"+std::to_string(extra_points):"")+".glsl";
   program.SetVerbose(true);
-	program.AttachShader(GL_COMPUTE_SHADER, filename.c_str());
-	program.LinkProgram();
+	/*program.AttachShader(GL_COMPUTE_SHADER, filename.c_str());
+	program.LinkProgram();*/
   this->infnorm = infnorm;
 }
 
@@ -175,3 +213,5 @@ Curve::Ptr Reconstruction<continuity,extra_points>::createResultCurve(const type
 	std::vector<glm::vec3> cps(arr.begin(), arr.end());
 	return Curve::Ptr(new BezierCurve(cps));
 }
+
+#include "Reconstruction_CPU.inl"

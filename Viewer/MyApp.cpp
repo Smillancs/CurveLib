@@ -202,17 +202,16 @@ void CMyApp::Update()
       if(optExtra == 0)
       {
     		Reconstruction<1,0> opt(infnorm);
-
-    		std::vector<Reconstruction<1,0>::Result> res = opt.optimize(optTarget, vec, dump);
+    		std::vector<Reconstruction<1,0>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
     		{
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
-          std::cerr << "Norm: " << res[i].second[0] << std::endl;
-          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
-          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
+          std::cerr << "Norm: " << res[i].second << std::endl;
+          std::cerr << "Norm: " << integrate(optTarget, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(optTarget, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -222,16 +221,16 @@ void CMyApp::Update()
       {
     		Reconstruction<1,1> opt(infnorm);
 
-    		std::vector<Reconstruction<1,1>::Result> res = opt.optimize(optTarget, vec, dump);
+    		std::vector<Reconstruction<1,1>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
     		{
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
-          std::cerr << "Norm: " << res[i].second[0] << std::endl;
-          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
-          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
+          std::cerr << "Norm: " << res[i].second << std::endl;
+          std::cerr << "Norm: " << integrate(optTarget, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(optTarget, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -241,16 +240,16 @@ void CMyApp::Update()
       {
     		Reconstruction<1,2> opt(infnorm);
 
-    		std::vector<Reconstruction<1,2>::Result> res = opt.optimize(optTarget, vec, dump);
+    		std::vector<Reconstruction<1,2>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
     		{
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
-          std::cerr << "Norm: " << res[i].second[0] << std::endl;
-          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
-          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
+          std::cerr << "Norm: " << res[i].second << std::endl;
+          std::cerr << "Norm: " << integrate(optTarget, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(optTarget, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -271,16 +270,16 @@ void CMyApp::Update()
       {
     		Reconstruction<2,0> opt(infnorm);
 
-    		std::vector<Reconstruction<2,0>::Result> res = opt.optimize(optTarget, vec, dump);
+    		std::vector<Reconstruction<2,0>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
     		{
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
-          std::cerr << "Norm: " << res[i].second[0] << std::endl;
-          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
-          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
+          std::cerr << "Norm: " << res[i].second << std::endl;
+          std::cerr << "Norm: " << integrate(optTarget, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(optTarget, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -290,16 +289,16 @@ void CMyApp::Update()
       {
     		Reconstruction<2,1> opt(infnorm);
 
-    		std::vector<Reconstruction<2,1>::Result> res = opt.optimize(optTarget, vec, dump);
+    		std::vector<Reconstruction<2,1>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
     		{
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
-          std::cerr << "Norm: " << res[i].second[0] << std::endl;
-          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
-          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
+          std::cerr << "Norm: " << res[i].second << std::endl;
+          std::cerr << "Norm: " << integrate(optTarget, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(optTarget, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -309,16 +308,16 @@ void CMyApp::Update()
       {
     		Reconstruction<2,2> opt(infnorm);
 
-    		std::vector<Reconstruction<2,2>::Result> res = opt.optimize(optTarget, vec, dump);
+    		std::vector<Reconstruction<2,2>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
     		{
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
-          std::cerr << "Norm: " << res[i].second[0] << std::endl;
-          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
-          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
+          std::cerr << "Norm: " << res[i].second << std::endl;
+          std::cerr << "Norm: " << integrate(optTarget, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(optTarget, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -339,16 +338,16 @@ void CMyApp::Update()
       {
     		Reconstruction<3,0> opt(infnorm);
 
-    		std::vector<Reconstruction<3,0>::Result> res = opt.optimize(optTarget, vec, dump);
+    		std::vector<Reconstruction<3,0>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
     		{
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
-          std::cerr << "Norm: " << res[i].second[0] << std::endl;
-          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
-          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
+          std::cerr << "Norm: " << res[i].second << std::endl;
+          std::cerr << "Norm: " << integrate(optTarget, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(optTarget, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -358,16 +357,16 @@ void CMyApp::Update()
       {
     		Reconstruction<3,1> opt(infnorm);
 
-    		std::vector<Reconstruction<3,1>::Result> res = opt.optimize(optTarget, vec, dump);
+    		std::vector<Reconstruction<3,1>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
     		{
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
-          std::cerr << "Norm: " << res[i].second[0] << std::endl;
-          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
-          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
+          std::cerr << "Norm: " << res[i].second << std::endl;
+          std::cerr << "Norm: " << integrate(optTarget, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(optTarget, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -377,16 +376,16 @@ void CMyApp::Update()
       {
     		Reconstruction<3,2> opt(infnorm);
 
-    		std::vector<Reconstruction<3,2>::Result> res = opt.optimize(optTarget, vec, dump);
+    		std::vector<Reconstruction<3,2>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
     		{
           Curve::Ptr optCurve = opt.createResultCurve(res[i]);
           std::cerr << optCurve->about() << std::endl;
-          std::cerr << "Norm: " << res[i].second[0] << std::endl;
-          std::cerr << "Norm: " << integrate(GeomInv::dK, optCurve) << std::endl;
-          std::cerr << "Original: " << integrate(GeomInv::dK, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
+          std::cerr << "Norm: " << res[i].second << std::endl;
+          std::cerr << "Norm: " << integrate(optTarget, optCurve) << std::endl;
+          std::cerr << "Original: " << integrate(optTarget, activeCurve, subdivisionPlaces[i], subdivisionPlaces[i+1]) << std::endl;
           activeCurves.push_back(optCurve);
 
           exportCurveData("curve.txt", optCurve, GeomInv::v, 1000, i);
@@ -394,14 +393,23 @@ void CMyApp::Update()
       }
     }
 
-    std::cerr << "Debug: " << std::endl;
-      for(int i=0;i<12;++i) std::cerr << (*dump)[i] << std::endl;
+    /*std::cerr << "Debug: " << std::endl;
+      for(int i=0;i<12;++i) std::cerr << (*dump)[i] << std::endl;*/
 
     multipleCurves = true;
 
     makeOpt = false;
 
     InitCurveRenderer(activeCurves, tesselated);
+    /*for(int i=0;i<activeCurves.size();++i)
+    {
+      auto s = ::infnorm(GeomInv::dK, activeCurves[i]);
+      std::cerr << "norm: " << s << std::endl;
+    }*/
+    /*auto s = ::infnorm(GeomInv::dK, activeCurve);
+    std::cerr << "norm: " << s << std::endl;
+    s = ::integrate(GeomInv::dK, activeCurve);
+    std::cerr << "norm: " << s << std::endl;*/
   }
 }
 
@@ -559,7 +567,8 @@ void CMyApp::Render()
   if (ImGui::CollapsingHeader("Optimize current curve"))
   {
       static int item = 1;
-      static const std::vector<std::string> names = {"curvature", "curvatureD", "const_velocity"};
+      //static const std::vector<std::string> names = {"curvature", "curvatureD", "const_velocity"};
+      static const std::vector<std::function<double(Curve&,double)>> names = {std::function<double(Curve&,double)>(GeomInv::dK), std::function<double(Curve&,double)>(GeomInv::K), std::function<double(Curve&,double)>([](Curve& c, double t){return glm::dot(c.dnf(t,1), c.dnf(t,2));}) };
       ImGui::Combo("Optimization target", &item, "curvature\0derivative of curvature\0constant velocity\0\0");
       optTarget = names[item];
       static int cont = 1;
