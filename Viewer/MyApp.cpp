@@ -202,7 +202,15 @@ void CMyApp::Update()
       if(optExtra == 0)
       {
     		Reconstruction<1,0> opt(infnorm);
-    		std::vector<Reconstruction<1,0>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
+      
+    		std::vector<Reconstruction<1,0>::Result_cpu> res;
+        if(cpu_opt)
+        {
+          if(elevation_alg)
+            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+          else
+            res = opt.optimize_cpu(optTarget, vec, dump);
+        }
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
@@ -221,7 +229,14 @@ void CMyApp::Update()
       {
     		Reconstruction<1,1> opt(infnorm);
 
-    		std::vector<Reconstruction<1,1>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
+    		std::vector<Reconstruction<1,1>::Result_cpu> res;
+        if(cpu_opt)
+        {
+          if(elevation_alg)
+            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+          else
+            res = opt.optimize_cpu(optTarget, vec, dump);
+        }
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
@@ -240,7 +255,14 @@ void CMyApp::Update()
       {
     		Reconstruction<1,2> opt(infnorm);
 
-    		std::vector<Reconstruction<1,2>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
+    		std::vector<Reconstruction<1,2>::Result_cpu> res;
+        if(cpu_opt)
+        {
+          if(elevation_alg)
+            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+          else
+            res = opt.optimize_cpu(optTarget, vec, dump);
+        }
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
@@ -270,7 +292,14 @@ void CMyApp::Update()
       {
     		Reconstruction<2,0> opt(infnorm);
 
-    		std::vector<Reconstruction<2,0>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
+    		std::vector<Reconstruction<2,0>::Result_cpu> res;
+        if(cpu_opt)
+        {
+          if(elevation_alg)
+            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+          else
+            res = opt.optimize_cpu(optTarget, vec, dump);
+        }
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
@@ -289,7 +318,14 @@ void CMyApp::Update()
       {
     		Reconstruction<2,1> opt(infnorm);
 
-    		std::vector<Reconstruction<2,1>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
+    		std::vector<Reconstruction<2,1>::Result_cpu> res;
+        if(cpu_opt)
+        {
+          if(elevation_alg)
+            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+          else
+            res = opt.optimize_cpu(optTarget, vec, dump);
+        }
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
@@ -308,7 +344,14 @@ void CMyApp::Update()
       {
     		Reconstruction<2,2> opt(infnorm);
 
-    		std::vector<Reconstruction<2,2>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
+    		std::vector<Reconstruction<2,2>::Result_cpu> res;
+        if(cpu_opt)
+        {
+          if(elevation_alg)
+            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+          else
+            res = opt.optimize_cpu(optTarget, vec, dump);
+        }
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
@@ -338,7 +381,14 @@ void CMyApp::Update()
       {
     		Reconstruction<3,0> opt(infnorm);
 
-    		std::vector<Reconstruction<3,0>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
+    		std::vector<Reconstruction<3,0>::Result_cpu> res;
+        if(cpu_opt)
+        {
+          if(elevation_alg)
+            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+          else
+            res = opt.optimize_cpu(optTarget, vec, dump);
+        }
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
@@ -357,7 +407,14 @@ void CMyApp::Update()
       {
     		Reconstruction<3,1> opt(infnorm);
 
-    		std::vector<Reconstruction<3,1>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
+    		std::vector<Reconstruction<3,1>::Result_cpu> res;
+        if(cpu_opt)
+        {
+          if(elevation_alg)
+            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+          else
+            res = opt.optimize_cpu(optTarget, vec, dump);
+        }
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
@@ -376,7 +433,14 @@ void CMyApp::Update()
       {
     		Reconstruction<3,2> opt(infnorm);
 
-    		std::vector<Reconstruction<3,2>::Result_cpu> res = opt.optimize_cpu(optTarget, vec, dump);
+    		std::vector<Reconstruction<3,2>::Result_cpu> res;
+        if(cpu_opt)
+        {
+          if(elevation_alg)
+            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+          else
+            res = opt.optimize_cpu(optTarget, vec, dump);
+        }
 
         activeCurves.clear();
         for(size_t i=0;i<res.size();++i)
@@ -578,6 +642,7 @@ void CMyApp::Render()
       static int norm = 0;
       ImGui::Combo("Norm", &norm, "2-norm\0infinity norm\0\0");
       infnorm = norm == 1;
+      ImGui::Combo("Algorithm", reinterpret_cast<int*>(&elevation_alg), "simultaneous\0by elevation\0\0");
       if(ImGui::Button("Optimize", ImVec2(0,0)))
       {
         makeOpt = true;

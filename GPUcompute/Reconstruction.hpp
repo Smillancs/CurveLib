@@ -122,6 +122,7 @@ public:
 
   std::vector<Result> optimize(const std::string& targetFunction, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
 	std::vector<Result_cpu> optimize_cpu(std::function<double(Curve&,double)> func, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
+	std::vector<Result_cpu> optimize_cpu_alt(std::function<double(Curve&,double)> func, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
 
 	Reconstruction(bool infnorm);
 

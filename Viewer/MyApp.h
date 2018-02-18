@@ -102,4 +102,5 @@ protected:
   std::vector<float> subdivisionPlaces = {0, 1};
 
   bool cpu_opt = true;
+  bool elevation_alg = true;
 };

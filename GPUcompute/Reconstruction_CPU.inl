@@ -62,6 +62,30 @@ std::array<glm::vec3,continuity+1> PointDerivatives(const std::vector<typename R
   if constexpr(continuity == 3) return PointDerivatives3<extra_points,DoF>(input, freedoms, id, end);
 }
 
+template<int continuity, int extra_points, size_t DoF, size_t point_num>
+std::array<float, DoF> getFreedoms(Curve::Ptr c)
+{
+  std::array<float, DoF> freedoms;
+  for(int i=0;i<continuity;++i)
+  {
+    freedoms[2*i] = glm::dot(c->dnf(0, i+1), GeomInv::e(*c, 0));
+    freedoms[2*i+1] = glm::dot(c->dnf(1, i+1), GeomInv::e(*c, 1));
+  }
+  if constexpr(extra_points > 0)
+  {
+    std::vector<glm::vec3> v = std::dynamic_pointer_cast<BezierCurve>(c)->GetGlmControlPoints();
+    std::array<glm::vec3,point_num> controlPoints;
+    std::copy(v.begin(), v.end(), controlPoints.begin());
+    for(int i=0;i<extra_points;++i)
+    {
+      freedoms[2*continuity+3*i]   = controlPoints[continuity+1+i].x;
+      freedoms[2*continuity+3*i+1] = controlPoints[continuity+1+i].y;
+      freedoms[2*continuity+3*i+2] = controlPoints[continuity+1+i].z;
+    }
+  }
+  return freedoms;
+}
+
 template<int continuity, int extra_points, size_t point_num>
 std::array<glm::vec3,point_num> calculateControlPoints(std::array<glm::vec3,continuity+1> start, std::array<glm::vec3,continuity+1> end, std::array<glm::vec3,extra_points> extras)
 {
@@ -208,12 +232,13 @@ std::array<float,DoF> optimizeNewton(std::function<double(Curve&,double)> func, 
       if constexpr(extra_points > 0)
       {
         std::cerr << "Norm: " << integrals[4] << std::endl;
-        /*printArray(_d);
+        printArray(freedoms);
+        printArray(_d);
         printArray(_dd);
-        printArray(_newton_step);*/
+        printArray(_newton_step);
       }
       for(int x=0;x < 3*extra_points;++x)
-        freedoms[x+2*continuity] -= newton_step[x];
+        freedoms[x+2*continuity] -= _newton_step[x];
 
       /*if(freedoms[0] < min_dist) freedoms[0] = min_dist;
       if(freedoms[1] < min_dist) freedoms[1] = min_dist;*/
@@ -313,6 +338,68 @@ std::vector<typename Reconstruction<continuity,extra_points>::Result_cpu> Recons
     /*if(_current[0] < glm::length(input[2*id].p() - input[2*id+1].p()) / 100.0) _current[0] = glm::length(input[2*id].p() - input[2*id+1].p()) / 100.0;
     if(_current[1] < glm::length(input[2*id].p() - input[2*id+1].p()) / 100.0) _current[1] = glm::length(input[2*id].p() - input[2*id+1].p()) / 100.0;*/
     std::cerr << "Done" << std::endl;
+    for(int j=0;j < extra_points;++j)
+      extras[j] = glm::vec3(_current[2*continuity+3*j+0],_current[2*continuity+3*j+1],_current[2*continuity+3*j+2]);
+    points = calculateControlPoints<continuity,extra_points,point_num>(PointDerivatives<continuity,extra_points,DoF>(input, _current, id, false), PointDerivatives<continuity,extra_points,DoF>(input, _current, id, true), extras);
+    //if(id==1) for(int i=0;i < 12;++i) dump.data[i] = positions[min].points[i/3][i%3];
+
+    for(int j=0;j < point_num;++j)
+      output[id].first[j] = points[j];
+    output[id].second = integrate(func, Curve::Ptr(new BezierCurve(std::vector<glm::vec3>(points.begin(), points.end()))));
+  }
+  return output;
+}
+
+template <int continuity, int extra_points>
+std::vector<typename Reconstruction<continuity,extra_points>::Result_cpu> Reconstruction<continuity,extra_points>::optimize_cpu_alt(std::function<double(Curve&,double)> func, const std::vector<typename Reconstruction<continuity,extra_points>::Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo)
+{
+  static const size_t DoF = 2*continuity+3*extra_points;
+  static const size_t point_num = 2*continuity+2+extra_points;
+  std::array<glm::vec3,point_num> points;
+  std::array<float,2*continuity> _start1;
+  std::array<float,DoF> _start;
+  std::array<float,2*continuity> _current1;
+  std::array<float,DoF> _current;
+  typename Reconstruction<continuity,extra_points>::Result current;
+  std::vector<typename Reconstruction<continuity,extra_points>::Result_cpu> output(input.size()/2);
+
+  for(int id = 0; id < input.size()/2; ++id)
+  {
+    for(int i=0;i < 2*continuity;++i) _start1[i] = glm::length(input[2*id].p() - input[2*id+1].p()) / 5;
+    bool finished = false;
+
+    _current1 = optimizeNewton<continuity,0,DoF-3*extra_points,point_num-extra_points>(func, input, _start1, id, false, false, finished);
+
+
+    if constexpr(extra_points > 0)
+    {
+      auto points = calculateControlPoints<continuity,0,point_num-extra_points>(PointDerivatives<continuity,0,DoF-3*extra_points>(input, _current1, id, false), PointDerivatives<continuity,0,DoF-3*extra_points>(input, _current1, id, true), std::array<glm::vec3,0>());
+
+      Curve::Ptr c = Curve::Ptr(new BezierCurve(std::vector<glm::vec3>(points.begin(), points.end())));
+
+      BezierCurve bc;
+      bc = *std::dynamic_pointer_cast<BezierCurve>(c);
+      for(size_t i = 0; i < extra_points; ++i)
+      {
+        bc = bc.Elevation();
+        std::cerr << "Degree elevation: " << std::endl;
+        std::cerr << bc.about() << std::endl;
+        //std::cerr << integrate(func, c) << std::endl;
+      }
+      c = Curve::Ptr(new BezierCurve(bc));
+
+      _start = getFreedoms<continuity, extra_points, 2*continuity+3*extra_points, 2*continuity+2+extra_points>(c);
+
+      _current = optimizeNewton<continuity,extra_points,DoF,point_num>(func, input, _start, id, true, false, finished);
+
+    }
+    else
+      _current = _current1;
+
+    /*if(_current[0] < glm::length(input[2*id].p() - input[2*id+1].p()) / 100.0) _current[0] = glm::length(input[2*id].p() - input[2*id+1].p()) / 100.0;
+    if(_current[1] < glm::length(input[2*id].p() - input[2*id+1].p()) / 100.0) _current[1] = glm::length(input[2*id].p() - input[2*id+1].p()) / 100.0;*/
+    std::cerr << "Done" << std::endl;
+    std::array<glm::vec3,extra_points> extras;
     for(int j=0;j < extra_points;++j)
       extras[j] = glm::vec3(_current[2*continuity+3*j+0],_current[2*continuity+3*j+1],_current[2*continuity+3*j+2]);
     points = calculateControlPoints<continuity,extra_points,point_num>(PointDerivatives<continuity,extra_points,DoF>(input, _current, id, false), PointDerivatives<continuity,extra_points,DoF>(input, _current, id, true), extras);
