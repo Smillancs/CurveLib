@@ -179,12 +179,12 @@ BezierCurve BezierCurve::Elevation()
 	BezierCurve bez;
 	bez.cp = {};
 	size_t n = cp.size();
-	cp.push_back(cp[0]);
+	bez.cp.push_back(cp[0]);
 	for (size_t i = 1; i < n; ++i)
 	{
 		bez.cp.push_back(i/(n+1.0)*cp[i-1] + (1.0 - i/(n+1.0))*cp[i]);
 	}
-	cp.push_back(cp[cp.size()-1]);
+	bez.cp.push_back(cp[cp.size()-1]);
 	return bez;
 }
 
