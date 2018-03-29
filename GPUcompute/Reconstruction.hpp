@@ -46,6 +46,7 @@ protected:
 
 struct ReconstructionData2 : ReconstructionData1
 {
+  ReconstructionData2(glm::vec3 a = glm::vec3(0), glm::vec3 b = glm::vec3(0), glm::vec3 c = glm::vec3(0), float d = 0):ReconstructionData1(a, b), _n(c), k(d){}
   glm::vec3& n()  { return _n; }
   const glm::vec3& n() const { return _n; }
   float& K()  { return k; }
@@ -58,6 +59,7 @@ protected:
 template<int N>
 struct ReconstructionData : ReconstructionData2
 {
+  ReconstructionData(glm::vec3 a = glm::vec3(0), glm::vec3 b = glm::vec3(0), glm::vec3 c = glm::vec3(0), float d = 0, std::array<float,N-2> e = std::array<float,N-2>(), std::array<float,N-2> f = std::array<float,N-2>()):ReconstructionData2(a, b, c, d), dk(e), t(f){}
   float& K()  { return k; }
   const float& K() const { return k; }
   float& T()  { return t[0]; }
@@ -77,9 +79,9 @@ protected:
 template<>
 struct ReconstructionData<0> : ReconstructionData0{};
 template<>
-struct ReconstructionData<1> : ReconstructionData1{};
+struct ReconstructionData<1> : ReconstructionData1{ using ReconstructionData1::ReconstructionData1; };
 template<>
-struct ReconstructionData<2> : ReconstructionData2{};
+struct ReconstructionData<2> : ReconstructionData2{ using ReconstructionData2::ReconstructionData2; };
 
 ReconstructionData<1> getPointData1(Curve::Ptr c, double t)
 {
@@ -123,6 +125,10 @@ public:
   std::vector<Result> optimize(const std::string& targetFunction, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
 	std::vector<Result_cpu> optimize_cpu(std::function<double(Curve&,double)> func, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
 	std::vector<Result_cpu> optimize_cpu_alt(std::function<double(Curve&,double)> func, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
+	std::vector<Result_cpu> optimize_cpu_bfgs(std::function<double(Curve&,double)> func, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
+	std::vector<Result_cpu> optimize_cpu_bfgs_elev(std::function<double(Curve&,double)> func, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo = 0);
+  std::vector<Result_cpu> optimize_cpu_alglib(std::function<double(Curve&,double)> func, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo);
+  //std::vector<Result_cpu> optimize_cpu_moocho(std::function<double(Curve&,double)> func, const std::vector<Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo);
 
 	Reconstruction(bool infnorm);
 
@@ -201,8 +207,8 @@ Reconstruction<continuity,extra_points>::Reconstruction(bool infnorm)
 {
   std::string filename = "../Assets/reconstruction"+std::to_string(continuity)+(extra_points>0?"_"+std::to_string(extra_points):"")+".glsl";
   program.SetVerbose(true);
-	/*program.AttachShader(GL_COMPUTE_SHADER, filename.c_str());
-	program.LinkProgram();*/
+	program.AttachShader(GL_COMPUTE_SHADER, filename.c_str());
+	program.LinkProgram();
   this->infnorm = infnorm;
 }
 

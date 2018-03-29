@@ -6,8 +6,6 @@
 namespace GeomInv{
 
 	// For "C++ historical reasons" all these templates have to be listed here
-	template <int order, int xyz>
-	double frenet_coordinate(Curve& c, double t);
 
 	template <>
 	double frenet_coordinate<1,1>(Curve& c, double t)
@@ -110,15 +108,16 @@ namespace GeomInv{
 
 	glm::dvec3 n(Curve& c, double t){ return glm::cross(b(c, t), e(c, t)); }
 
-  double v(Curve& c, double t)
-  {
-    return glm::length(c.dnf(t,1));
-  }
+	double v(Curve& c, double t)
+	{
+		return glm::length(c.dnf(t,1));
+	}
 
 	double K(Curve& c, double t)
 	{
 		double x1 = frenet_coordinate<1,1>(c, t);
 		double y2 = frenet_coordinate<2,2>(c, t);
+		assert(y2 / (x1 * x1) > 0);
 		return y2 / (x1 * x1);
 	}
 

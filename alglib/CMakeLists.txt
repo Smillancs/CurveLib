@@ -1,0 +1,31 @@
+add_library(alglib STATIC
+alglibinternal.cpp
+dataanalysis.cpp
+integration.h
+solvers.cpp
+alglibinternal.h
+dataanalysis.h
+interpolation.cpp
+solvers.h
+alglibmisc.cpp
+diffequations.cpp
+ interpolation.h
+specialfunctions.cpp
+alglibmisc.h
+diffequations.h
+ linalg.cpp
+ specialfunctions.h
+ap.cpp
+fasttransforms.cpp
+linalg.h
+ statistics.cpp
+ap.h
+fasttransforms.h
+optimization.cpp
+ statistics.h
+CMakeLists.txt
+integration.cpp
+ optimization.h
+ stdafx.h
+)
+

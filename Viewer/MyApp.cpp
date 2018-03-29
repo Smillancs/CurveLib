@@ -207,9 +207,9 @@ void CMyApp::Update()
         if(cpu_opt)
         {
           if(elevation_alg)
-            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
           else
-            res = opt.optimize_cpu(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
         }
 
         activeCurves.clear();
@@ -233,9 +233,9 @@ void CMyApp::Update()
         if(cpu_opt)
         {
           if(elevation_alg)
-            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
           else
-            res = opt.optimize_cpu(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
         }
 
         activeCurves.clear();
@@ -259,9 +259,9 @@ void CMyApp::Update()
         if(cpu_opt)
         {
           if(elevation_alg)
-            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
           else
-            res = opt.optimize_cpu(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
         }
 
         activeCurves.clear();
@@ -296,9 +296,9 @@ void CMyApp::Update()
         if(cpu_opt)
         {
           if(elevation_alg)
-            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
           else
-            res = opt.optimize_cpu(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
         }
 
         activeCurves.clear();
@@ -322,9 +322,9 @@ void CMyApp::Update()
         if(cpu_opt)
         {
           if(elevation_alg)
-            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
           else
-            res = opt.optimize_cpu(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
         }
 
         activeCurves.clear();
@@ -348,9 +348,9 @@ void CMyApp::Update()
         if(cpu_opt)
         {
           if(elevation_alg)
-            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
           else
-            res = opt.optimize_cpu(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
         }
 
         activeCurves.clear();
@@ -385,9 +385,9 @@ void CMyApp::Update()
         if(cpu_opt)
         {
           if(elevation_alg)
-            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
           else
-            res = opt.optimize_cpu(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
         }
 
         activeCurves.clear();
@@ -411,9 +411,9 @@ void CMyApp::Update()
         if(cpu_opt)
         {
           if(elevation_alg)
-            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
           else
-            res = opt.optimize_cpu(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
         }
 
         activeCurves.clear();
@@ -437,9 +437,9 @@ void CMyApp::Update()
         if(cpu_opt)
         {
           if(elevation_alg)
-            res = opt.optimize_cpu_alt(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
           else
-            res = opt.optimize_cpu(optTarget, vec, dump);
+            res = opt.optimize_cpu_alglib(optTarget, vec, dump);
         }
 
         activeCurves.clear();

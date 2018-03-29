@@ -18,6 +18,7 @@
 #include <vector>
 #include <sstream>
 #include <chrono>
+#include <random>
 
 #include <glm/gtc/matrix_access.hpp>
 
@@ -36,6 +37,8 @@ private:
 	bool curveProcess(std::stringstream& cmd);
 
 	bool runTest(std::stringstream& cmd);
+
+	void doStuff();
 
 	bool printHelp();
 
@@ -77,6 +80,10 @@ bool CommandLine::process(const std::string& cmd)
 		return printHelp();
 	if(cmd1 == "quit")
 		return false;
+	if(cmd1 == "w"){
+		doStuff();
+		return true;
+	}
 	else
 		throw Exception("This command cannot be used");
 }
@@ -308,6 +315,304 @@ bool CommandLine::runTest(std::stringstream& cmd)
 	return true;
 }
 
+void CommandLine::doStuff()
+{
+	// generating grids (2d)
+	/*std::ofstream file("curv4d10.txt");
+
+	std::ofstream file("grid_bounded.txt");
+	const int N = 20;
+	std::vector<Reconstruction<1>::Input> vec;
+	for(int i=0;i<=N;++i) for(int j=0;j<=N;++j)
+	{
+		// depends on interval of parameters
+		float alpha = M_PI*i/N - M_PI_2;//2*M_PI*(i)/N;
+		float beta = M_PI*j/N - M_PI_2;//2*M_PI*(j)/N;
+		glm::vec3 p0 = glm::vec3(0,0,0);
+		glm::vec3 e0 = glm::vec3(cos(alpha), sin(alpha), 0);
+		glm::vec3 p1 = glm::vec3(1,0,0);
+		glm::vec3 e1 = glm::vec3(cos(beta), sin(beta), 0);
+		vec.push_back(ReconstructionData<1>(p0, e0));
+		vec.push_back(ReconstructionData<1>(p1, e1));
+	}
+	Reconstruction<1,0> opt(false);
+	std::function<double(Curve&,double)> optTarget = std::function<double(Curve&,double)>([](Curve& c, double t){return abs(glm::dot(c.dnf(t,1), c.dnf(t,2)));});
+
+	std::string _optTarget = "const_velocity";
+
+	// CPU/GPU
+	std::vector<Reconstruction<1,0>::Result_cpu> res;
+	//std::vector<Reconstruction<1,0>::Result> res;
+	
+	// CPU/GPU
+	res = opt.optimize_cpu_alglib(optTarget, vec, nullptr);
+	//res = opt.optimize(_optTarget, vec, nullptr);
+
+	for(int i=0;i<=N;++i) for(int j=0;j<=N;++j)
+	{
+		float alpha = M_PI*i/N - M_PI_2;//2*M_PI*(i)/N;
+		float beta = M_PI*j/N - M_PI_2;//2*M_PI*(j)/N;
+		
+		Curve::Ptr c = opt.createResultCurve(res[i*(N+1)+j]);
+
+		file << alpha << " " << beta << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << res[i*(N+1)+j].second << std::endl;
+	}*/
+
+	// generating grids (2d, only curvature, fixed angles)
+	/*std::ofstream file("curv20.txt");
+	for(int i=0;i<N;++i) for(int j=0;j<N;++j)
+	{
+		float alpha = M_PI / 4;
+		float beta = -M_PI / 4;
+		glm::vec3 p0 = glm::vec3(0,0,0);
+		glm::vec3 e0 = glm::vec3(cos(alpha), sin(alpha), 0);
+		glm::vec3 n0 = glm::vec3(cos(alpha-M_PI/2), sin(alpha-M_PI/2), 0);
+		glm::vec3 p1 = glm::vec3(1,0,0);
+		glm::vec3 e1 = glm::vec3(cos(beta), sin(beta), 0);
+		glm::vec3 n1 = glm::vec3(cos(beta-M_PI/2), sin(beta-M_PI/2), 0);
+
+		float k0 = i*2.0/N;
+		float k1 = j*2.0/N;
+
+		std::vector<Reconstruction<2>::Input> vec = {ReconstructionData<2>(p0, e0, n0, k0), ReconstructionData<2>(p1, e1, n1, k1)};
+
+		Reconstruction<2,0> opt(false);
+		std::function<double(Curve&,double)> optTarget = std::function<double(Curve&,double)>([](Curve& c, double t){return abs(glm::dot(c.dnf(t,1), c.dnf(t,2)));});
+
+		std::vector<Reconstruction<2,0>::Result_cpu> res;
+		
+		res = opt.optimize_cpu_alglib(optTarget, vec, nullptr);
+		Curve::Ptr c = opt.createResultCurve(res[0]);
+
+		file << k0 << " " << k1 << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<2,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << GeomInv::frenet_coordinate<2,1>(*c, 1) << " " << res[0].second << std::endl;
+
+	}*/
+
+	// generating grids (4d)
+	/*std::ofstream file("curv4d20.txt");
+	const int N = 10, M = 20;
+	for(int i=0;i<=N;++i) for(int j=0;j<=N;++j) for(int k=-M/2;k<=M/2;++k) for(int l=-M/2;l<=M/2;++l)
+	{
+		float alpha = -M_PI/2+M_PI*(i)/N;
+		float beta = -M_PI/2+M_PI*(j)/N;
+		glm::vec3 p0 = glm::vec3(0,0,0);
+		glm::vec3 e0 = glm::vec3(cos(alpha), sin(alpha), 0);
+		glm::vec3 n0 = glm::vec3(cos(alpha-M_PI/2), sin(alpha-M_PI/2), 0);
+		glm::vec3 p1 = glm::vec3(1,0,0);
+		glm::vec3 e1 = glm::vec3(cos(beta), sin(beta), 0);
+		glm::vec3 n1 = glm::vec3(cos(beta-M_PI/2), sin(beta-M_PI/2), 0);
+
+		float k0 = k*4.0/M;
+		float k1 = l*4.0/M;
+
+		std::vector<Reconstruction<2>::Input> vec = {ReconstructionData<2>(p0, e0, n0, k0), ReconstructionData<2>(p1, e1, n1, k1)};
+
+		Reconstruction<2,0> opt(false);
+		std::function<double(Curve&,double)> optTarget = std::function<double(Curve&,double)>([](Curve& c, double t){return abs(glm::dot(c.dnf(t,1), c.dnf(t,2)));});
+
+		std::vector<Reconstruction<2,0>::Result_cpu> res;
+		
+		res = opt.optimize_cpu_alglib(optTarget, vec, nullptr);
+		Curve::Ptr c = opt.createResultCurve(res[0]);
+
+		file << alpha << " " << beta << " " << k0 << " " << k1 << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<2,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << GeomInv::frenet_coordinate<2,1>(*c, 1) << " " << res[0].second << std::endl;
+
+	}*/
+
+	// generating scattered data
+	/*unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	std::default_random_engine generator (seed);
+	std::ofstream scattered4d("scattered4d.txt");
+	const int N = 100;
+	for(int i=0;i<=N;++i)
+	{
+		std::uniform_real_distribution<double> angles(-M_PI_2, M_PI_2);
+		std::uniform_real_distribution<double> curvs(-2, 2);
+		float alpha = angles(generator);
+		float beta = angles(generator);
+		glm::vec3 p0 = glm::vec3(0,0,0);
+		glm::vec3 e0 = glm::vec3(cos(alpha), sin(alpha), 0);
+		glm::vec3 n0 = glm::vec3(cos(alpha-M_PI/2), sin(alpha-M_PI/2), 0);
+		glm::vec3 p1 = glm::vec3(1,0,0);
+		glm::vec3 e1 = glm::vec3(cos(beta), sin(beta), 0);
+		glm::vec3 n1 = glm::vec3(cos(beta-M_PI/2), sin(beta-M_PI/2), 0);
+
+		float k0 = curvs(generator);
+		float k1 = curvs(generator);
+
+		std::vector<Reconstruction<2>::Input> vec = {ReconstructionData<2>(p0, e0, n0, k0), ReconstructionData<2>(p1, e1, n1, k1)};
+
+		Reconstruction<2,0> opt(false);
+		std::function<double(Curve&,double)> optTarget = std::function<double(Curve&,double)>([](Curve& c, double t){return abs(glm::dot(c.dnf(t,1), c.dnf(t,2)));});
+
+		std::vector<Reconstruction<2,0>::Result_cpu> res;
+		
+		res = opt.optimize_cpu_alglib(optTarget, vec, nullptr);
+		Curve::Ptr c = opt.createResultCurve(res[0]);
+
+		scattered4d << alpha << " " << beta << " " << k0 << " " << k1 << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<2,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << GeomInv::frenet_coordinate<2,1>(*c, 1) << " " << res[0].second << std::endl;
+
+	}*/
+
+
+	// testing estimates by method
+	/*std::vector<std::string> infiles = {"estimates.txt", "estimates_nn.txt", "estimates_cs.txt", "estimates_pch.txt", "estimates_kappa_pch.txt"};
+	std::vector<std::string> outfiles = {"error.txt", "error_nn.txt", "error_cs.txt", "error_pch.txt", "error_kappa_pch.txt"};
+	std::vector<std::string> exacts = {"exact.txt", "exact_nn.txt", "exact_cs.txt", "exact_pch.txt", "exact_kappa_pch.txt"};
+	int i = 2;
+	//std::cin >> i;
+	std::ifstream est(infiles[i].c_str());
+	std::ofstream err(outfiles[i].c_str());
+	std::ofstream ex(exacts[i].c_str());
+
+	for(int i=0;i<10000;++i)
+	{
+		float alpha, beta, x1b, x1j, wEst;
+		est >> alpha >> beta >> x1b >> x1j >> wEst;
+		glm::vec3 p0 = glm::vec3(0,0,0);
+		glm::vec3 e0 = glm::vec3(cos(alpha), sin(alpha), 0);
+		glm::vec3 p1 = glm::vec3(1,0,0);
+		glm::vec3 e1 = glm::vec3(cos(beta), sin(beta), 0);
+		std::vector<Reconstruction<1>::Input> vec = {ReconstructionData<1>(p0, e0), ReconstructionData<1>(p1, e1)};
+
+		Reconstruction<1,0> opt(false);
+		std::function<double(Curve&,double)> optTarget = std::function<double(Curve&,double)>([](Curve& c, double t){return abs(glm::dot(c.dnf(t,1), c.dnf(t,2)));});// GeomInv::dK;
+		//std::function<double(Curve&,double)> optTarget = GeomInv::K;
+
+		std::vector<Reconstruction<1,0>::Result_cpu> res;
+		
+		res = opt.optimize_cpu_alglib(optTarget, vec, nullptr);
+		Curve::Ptr c = opt.createResultCurve(res[0]);
+
+		//std::cout << alpha << " " << beta << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << integrate(optTarget, c) << std::endl;
+		//std::cout << c->about() << std::endl;
+
+		float x1bOpt = GeomInv::frenet_coordinate<1,1>(*c, 0), x1jOpt = GeomInv::frenet_coordinate<1,1>(*c, 1);
+		float wOpt = integrate(optTarget, c);
+		//float x1bOpt, x1jOpt, wOpt;
+		//ex >> alpha >> beta >> x1bOpt >> x1jOpt >> wOpt;
+
+		//std::cerr << c->about() << std::endl;
+
+
+		std::array<float,2> x1s = {x1b, x1j};
+		std::array<glm::vec3,4> points = calculateControlPoints<1,0,4>(PointDerivatives<1,0,2>(vec, x1s, 0, false), PointDerivatives<1,0,2>(vec, x1s, 0, true), std::array<glm::vec3,0>());
+		c = Curve::Ptr(new BezierCurve(std::vector<glm::vec3>(points.begin(), points.end())));
+
+		float wReal = integrate(optTarget, c);
+
+		//if(x1bOpt > 1e-6 && x1jOpt > 1e-6 && wReal > 1e-6 && wOpt > 1e-6)
+		ex << alpha << ' ' << beta << ' ' << x1bOpt << ' ' << x1jOpt << ' ' << wOpt << std::endl;
+
+		err << (x1b-x1bOpt)/std::max(abs(x1bOpt), abs(x1b)) << ' ' << (x1j-x1jOpt)/std::max(abs(x1jOpt), abs(x1j)) << ' ' << (wEst-wReal)/std::max(abs(wReal), abs(wEst)) << ' ' << (wReal-wOpt)/std::max(abs(wOpt), abs(wReal)) << std::endl;
+		//std::cerr << alpha << " " << beta << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << integrate(optTarget, c) << " " << wOpt << std::endl;
+		//std::cout << c->about() << std::endl;
+	}*/
+	
+	// testing estimates by gridsize
+	/*std::vector<std::string> infiles = {"estimates5.txt", "estimates10.txt", "estimates15.txt", "estimates20.txt", "estimates30.txt"};
+	std::vector<std::string> outfiles = {"error5.txt", "error10.txt", "error15.txt", "error20.txt", "error30.txt"};
+	//int i = 2;
+	//std::cin >> i;
+	for(int k=0;k<5;++k){
+		std::ifstream est(infiles[k].c_str());
+		std::ofstream err(outfiles[k].c_str());
+
+		for(int i=0;i<1000;++i)
+		{
+			float alpha, beta, x1b, x1j, wEst;
+			est >> alpha >> beta >> x1b >> x1j >> wEst;
+			glm::vec3 p0 = glm::vec3(0,0,0);
+			glm::vec3 e0 = glm::vec3(cos(alpha), sin(alpha), 0);
+			glm::vec3 p1 = glm::vec3(1,0,0);
+			glm::vec3 e1 = glm::vec3(cos(beta), sin(beta), 0);
+			std::vector<Reconstruction<1>::Input> vec = {ReconstructionData<1>(p0, e0), ReconstructionData<1>(p1, e1)};
+
+			Reconstruction<1,0> opt(false);
+			std::function<double(Curve&,double)> optTarget = std::function<double(Curve&,double)>([](Curve& c, double t){return abs(glm::dot(c.dnf(t,1), c.dnf(t,2)));});// GeomInv::dK;
+			//std::function<double(Curve&,double)> optTarget = GeomInv::K;
+
+			std::vector<Reconstruction<1,0>::Result_cpu> res;
+			
+			res = opt.optimize_cpu_alglib(optTarget, vec, nullptr);
+			Curve::Ptr c = opt.createResultCurve(res[0]);
+
+			//std::cout << alpha << " " << beta << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << integrate(optTarget, c) << std::endl;
+			//std::cout << c->about() << std::endl;
+
+			float x1bOpt = GeomInv::frenet_coordinate<1,1>(*c, 0), x1jOpt = GeomInv::frenet_coordinate<1,1>(*c, 1);
+			float wOpt = integrate(optTarget, c);
+			//float x1bOpt, x1jOpt, wOpt;
+			//ex >> alpha >> beta >> x1bOpt >> x1jOpt >> wOpt;
+
+			//std::cerr << c->about() << std::endl;
+
+
+			std::array<float,2> x1s = {x1b, x1j};
+			std::array<glm::vec3,4> points = calculateControlPoints<1,0,4>(PointDerivatives<1,0,2>(vec, x1s, 0, false), PointDerivatives<1,0,2>(vec, x1s, 0, true), std::array<glm::vec3,0>());
+			c = Curve::Ptr(new BezierCurve(std::vector<glm::vec3>(points.begin(), points.end())));
+
+			float wReal = integrate(optTarget, c);
+
+			//if(x1bOpt > 1e-6 && x1jOpt > 1e-6 && wReal > 1e-6 && wOpt > 1e-6)
+			//ex << alpha << ' ' << beta << ' ' << x1bOpt << ' ' << x1jOpt << ' ' << wOpt << std::endl;
+
+			err << (x1b-x1bOpt)/std::max(abs(x1bOpt), abs(x1b)) << ' ' << (x1j-x1jOpt)/std::max(abs(x1jOpt), abs(x1j)) << ' ' << (wEst-wReal)/std::max(abs(wReal), abs(wEst)) << ' ' << (wReal-wOpt)/std::max(abs(wOpt), abs(wReal)) << std::endl;
+			//std::cerr << alpha << " " << beta << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << integrate(optTarget, c) << " " << wOpt << std::endl;
+			//std::cout << c->about() << std::endl;
+		}
+	}*/
+
+
+	// testing estimates (4d)
+	/*std::ifstream est("estimates4d.txt");
+	std::ofstream err("error4d.txt");*/
+	/*std::ifstream est("estimates_scattered.txt");
+	std::ofstream err("error_scattered.txt");*/
+
+	/*for(int i=0;i<10000;++i)
+	{
+		float alpha, beta, k0, k1, x1b, x2b, x1j, x2j, wEst;
+		est >> alpha >> beta >> k0 >> k1 >> x1b >> x2b >> x1j >> x2j >> wEst;
+		glm::vec3 p0 = glm::vec3(0,0,0);
+		glm::vec3 e0 = glm::vec3(cos(alpha), sin(alpha), 0);
+		glm::vec3 n0 = glm::vec3(cos(alpha-M_PI/2), sin(alpha-M_PI/2), 0);
+		glm::vec3 p1 = glm::vec3(1,0,0);
+		glm::vec3 e1 = glm::vec3(cos(beta), sin(beta), 0);
+		glm::vec3 n1 = glm::vec3(cos(beta-M_PI/2), sin(beta-M_PI/2), 0);
+
+		std::vector<Reconstruction<2>::Input> vec = {ReconstructionData<2>(p0, e0, n0, k0), ReconstructionData<2>(p1, e1, n1, k1)};
+
+		Reconstruction<2,0> opt(false);
+		std::function<double(Curve&,double)> optTarget = std::function<double(Curve&,double)>([](Curve& c, double t){return abs(glm::dot(c.dnf(t,1), c.dnf(t,2)));});// GeomInv::dK;
+
+		std::vector<Reconstruction<2,0>::Result_cpu> res;
+		
+		res = opt.optimize_cpu_alglib(optTarget, vec, nullptr);
+		Curve::Ptr c = opt.createResultCurve(res[0]);
+
+		//std::cout << alpha << " " << beta << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << integrate(optTarget, c) << std::endl;
+		//std::cout << c->about() << std::endl;
+
+		float x1bOpt = GeomInv::frenet_coordinate<1,1>(*c, 0), x1jOpt = GeomInv::frenet_coordinate<1,1>(*c, 1);
+		float x2bOpt = GeomInv::frenet_coordinate<2,1>(*c, 0), x2jOpt = GeomInv::frenet_coordinate<2,1>(*c, 1);
+		float wOpt = integrate(optTarget, c);
+
+		//std::cerr << c->about() << std::endl;
+
+
+		std::array<float,4> x1s = {x1b, x1j, x2b, x2j};
+		std::array<glm::vec3,6> points = calculateControlPoints<2,0,6>(PointDerivatives<2,0,4>(vec, x1s, 0, false), PointDerivatives<2,0,4>(vec, x1s, 0, true), std::array<glm::vec3,0>());
+		c = Curve::Ptr(new BezierCurve(std::vector<glm::vec3>(points.begin(), points.end())));
+
+		float wReal = integrate(optTarget, c);
+
+		if(x1bOpt > 1e-6 && x1jOpt > 1e-6 && abs(x2bOpt) > 1e-6 && abs(x2jOpt) > 1e-6 && abs(wReal) > 1e-6 && abs(wOpt) > 1e-6)
+		err << ((x1b-x1bOpt)/std::max(abs(x1bOpt), abs(x1b))) << ' ' << (x2b-x2bOpt)/std::max(abs(x2bOpt), abs(x2b)) << ' ' << (x1j-x1jOpt)/std::max(abs(x1jOpt),abs(x1j)) << ' ' << (x2j-x2jOpt)/std::max(abs(x2jOpt),abs(x2j)) << ' ' << ((wEst-wReal)/std::max(abs(wReal), abs(wEst))) << ' ' << ((wReal-wOpt)/std::max(abs(wOpt), abs(wReal))) << std::endl;
+		//std::cout << alpha << " " << beta << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << integrate(optTarget, c) << std::endl;
+		//std::cout << c->about() << std::endl;
+	}*/
+}
 
 bool CommandLine::printHelp()
 {

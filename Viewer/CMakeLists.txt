@@ -15,7 +15,6 @@ imgui_impl_sdl_gl3.cpp
 
 set(tarver "x86")
 
-
 if(UNIX)
 	set(libdir "usr/lib/")
 	include_directories(/usr/include/SDL2)
@@ -53,6 +52,8 @@ target_link_libraries(Viewer PUBLIC ${SDL2_image_LIB})
 target_link_libraries(Viewer PUBLIC CurveLib)
 target_link_libraries(Viewer PUBLIC GPUcompute)
 target_link_libraries(Viewer PUBLIC Imgui)
+#target_link_libraries(Viewer PUBLIC dlib)
+target_link_libraries(Viewer PUBLIC alglib)
 
 if(WIN32)
 	file(COPY ../OGLPack/bin/x86/glew32.dll DESTINATION ${CMAKE_BINARY_DIR}/Viewer)
