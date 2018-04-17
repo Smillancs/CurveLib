@@ -318,16 +318,14 @@ bool CommandLine::runTest(std::stringstream& cmd)
 void CommandLine::doStuff()
 {
 	// generating grids (2d)
-	/*std::ofstream file("curv4d10.txt");
-
-	std::ofstream file("grid_bounded.txt");
+	std::ofstream file("dummy.txt");
 	const int N = 20;
 	std::vector<Reconstruction<1>::Input> vec;
 	for(int i=0;i<=N;++i) for(int j=0;j<=N;++j)
 	{
 		// depends on interval of parameters
-		float alpha = M_PI*i/N - M_PI_2;//2*M_PI*(i)/N;
-		float beta = M_PI*j/N - M_PI_2;//2*M_PI*(j)/N;
+		float alpha = M_PI*(i)/N - M_PI_2;
+		float beta = M_PI*(j)/N - M_PI_2;
 		glm::vec3 p0 = glm::vec3(0,0,0);
 		glm::vec3 e0 = glm::vec3(cos(alpha), sin(alpha), 0);
 		glm::vec3 p1 = glm::vec3(1,0,0);
@@ -345,19 +343,61 @@ void CommandLine::doStuff()
 	//std::vector<Reconstruction<1,0>::Result> res;
 	
 	// CPU/GPU
-	res = opt.optimize_cpu_alglib(optTarget, vec, nullptr);
+	res = opt.optimize_cpu(optTarget, vec, nullptr);
 	//res = opt.optimize(_optTarget, vec, nullptr);
 
 	for(int i=0;i<=N;++i) for(int j=0;j<=N;++j)
 	{
-		float alpha = M_PI*i/N - M_PI_2;//2*M_PI*(i)/N;
-		float beta = M_PI*j/N - M_PI_2;//2*M_PI*(j)/N;
+		float alpha = M_PI*(i)/N - M_PI_2;
+		float beta = M_PI*(j)/N - M_PI_2;
 		
 		Curve::Ptr c = opt.createResultCurve(res[i*(N+1)+j]);
+		float wReal = integrate(optTarget, c);
 
-		file << alpha << " " << beta << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << res[i*(N+1)+j].second << std::endl;
-	}*/
+		file << alpha << " " << beta << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << res[i*(N+1)+j].second[0] << " " << wReal << std::endl;
+	}
+/*
+	const int N = 100;
+	std::vector<Reconstruction<1>::Input> vec;
+	int i=50, j=50;
 
+	float alpha = M_PI*(i)/N - M_PI_2;
+	float beta = M_PI*(j)/N - M_PI_2;
+	glm::vec3 p0 = glm::vec3(0,0,0);
+	glm::vec3 e0 = glm::vec3(cos(alpha), sin(alpha), 0);
+	glm::vec3 p1 = glm::vec3(1,0,0);
+	glm::vec3 e1 = glm::vec3(cos(beta), sin(beta), 0);
+	vec.push_back(ReconstructionData<1>(p0, e0));
+	vec.push_back(ReconstructionData<1>(p1, e1));
+
+	Reconstruction<1,0> opt(false);
+	std::function<double(Curve&,double)> optTarget = std::function<double(Curve&,double)>([](Curve& c, double t){return abs(glm::dot(c.dnf(t,1), c.dnf(t,2)));});
+
+	std::string _optTarget = "const_velocity";
+
+	for(int i=0;i<100;++i) for(int j=0;j<100;++j)
+	{
+		std::array<float,2> vals = {i/50.0f-1, j/50.0f-1};
+		std::array<glm::vec3,4> points = calculateControlPoints<1,0,4>(PointDerivatives<1,0,2>(vec,vals,0,false), PointDerivatives<1,0,2>(vec,vals,0,true), std::array<glm::vec3,0>{});
+		Curve::Ptr c = Curve::Ptr(new BezierCurve(std::vector<glm::vec3>(points.begin(), points.end())));
+		std::cerr << vals[0] << " " << vals[1] << " " << integrate(optTarget, c) << std::endl;
+	}
+	return;
+	// CPU/GPU
+	//std::vector<Reconstruction<1,0>::Result_cpu> res;
+	std::vector<Reconstruction<1,0>::Result> res;
+	
+	std::shared_ptr<std::vector<float>> debugInfo = std::shared_ptr<std::vector<float>>(new std::vector<float>{});
+	// CPU/GPU
+	//res = opt.optimize_cpu_alglib(optTarget, vec, nullptr);
+	res = opt.optimize(_optTarget, vec, debugInfo);
+	Curve::Ptr c = opt.createResultCurve(res[0]);
+	float wReal = integrate(optTarget, c);
+
+	std::cerr << alpha << " " << beta << " " << GeomInv::frenet_coordinate<1,1>(*c, 0) << " " << GeomInv::frenet_coordinate<1,1>(*c, 1) << " " << res[0].second[0] << " " << wReal << std::endl;
+	std::vector<float>& ref = *debugInfo;
+	std::cerr << ref[0] << " " << ref[1] << " " << ref[2] << " " << ref[3] << " " << ref[4] << " " << ref[5] << " " << ref[6] << " " << ref[7] << " " << ref[8] << " " << ref[9] << " " << ref[10] << " " << ref[11] << " " << ref[12] << " " << ref[13] << std::endl;
+*/
 	// generating grids (2d, only curvature, fixed angles)
 	/*std::ofstream file("curv20.txt");
 	for(int i=0;i<N;++i) for(int j=0;j<N;++j)

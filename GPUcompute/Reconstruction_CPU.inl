@@ -315,26 +315,7 @@ std::vector<typename Reconstruction<continuity,extra_points>::Result_cpu> Recons
 
     bool finished = false;
     int c = 0;
-    if constexpr(extra_points > 0)
-      _current = optimizeNewton<continuity,extra_points,DoF,point_num>(func, input, _start, id, true, false, finished);
-    while(true)
-    {
-      _start = _current;
-
-      _current = optimizeNewton<continuity,extra_points,DoF,point_num>(func, input, _start, id, false, false, finished);
-
-      if(finished || c >= 2) break;
-
-      if constexpr(extra_points > 0)
-      {
-         _start = _current;
-
-         _current = optimizeNewton<continuity,extra_points,DoF,point_num>(func, input, _start, id, true, false, finished);
-
-         if(finished || c >= 2) break;
-      }
-      c++;
-    }
+      _current = optimizeLBFGS<DoF, continuity, extra_points>(func, input, _start, id);
     /*if(_current[0] < glm::length(input[2*id].p() - input[2*id+1].p()) / 100.0) _current[0] = glm::length(input[2*id].p() - input[2*id+1].p()) / 100.0;
     if(_current[1] < glm::length(input[2*id].p() - input[2*id+1].p()) / 100.0) _current[1] = glm::length(input[2*id].p() - input[2*id+1].p()) / 100.0;*/
     std::cerr << "Done" << std::endl;
@@ -899,6 +880,185 @@ std::vector<typename Reconstruction<continuity,extra_points>::Result_cpu> Recons
 
   //return MoochoSolver::SOLVE_RETURN_EXCEPTION;
 }*/
+
+
+
+template<size_t DoF, int continuity, int extra_points>
+float optimizationTarget(std::function<double(Curve&,double)> func, const std::vector<typename Reconstruction<continuity,extra_points>::Input>& input, std::array<float,DoF> vals, uint id)
+{
+  const int point_num = 2*continuity+2+extra_points;
+  std::array<glm::vec3,point_num> points = calculateControlPoints<continuity,extra_points,point_num>(PointDerivatives<continuity,extra_points,DoF>(input,vals,id,false), PointDerivatives<continuity,extra_points,DoF>(input,vals,id,true), std::array<glm::vec3,0>{});
+  return integrate(func, Curve::Ptr(new BezierCurve(std::vector<glm::vec3>(points.begin(), points.end()))));
+}
+
+template<size_t DoF>
+float optimizationTarget_dummy(std::array<float,DoF> vals)
+{
+  return pow(vals[0]-2,2) + pow(vals[1]-3,2) - 1;
+}
+
+template<size_t DoF>
+float optimizationTarget_rosen(std::array<float,DoF> vals)
+{
+  return pow(1 - vals[0], 2) + 100 * pow(vals[1] - pow(vals[0], 2), 2);
+}
+
+#define ITERATIONS 5
+
+template<size_t DoF>
+std::array<float,DoF> get(std::array<float,ITERATIONS*DoF> t, int k)
+{
+  if(k < 0)
+  {
+    std::array<float,DoF> v;
+    for(int i = 0; i < DoF; ++i)
+    {
+      v[i] = 0;
+    }
+    return v;
+  }
+  std::array<float,DoF> v;
+  for(int i = 0; i < DoF; ++i)
+  {
+    v[i] = t[k*DoF+i];
+  }
+  return v;
+}
+
+template<size_t DoF>
+std::array<float,DoF> add(std::array<float,DoF> t, std::array<float,DoF> a)
+{
+  for(int i = 0; i < DoF; ++i)
+  {
+    t[i] += a[i];
+  }
+  return t;
+}
+
+template<size_t DoF>
+std::array<float,DoF> mult(std::array<float,DoF> t, float a)
+{
+  for(int i = 0; i < DoF; ++i)
+  {
+    t[i] *= a;
+  }
+  return t;
+}
+
+template<size_t DoF>
+float dot(std::array<float,DoF> v1, std::array<float,DoF> v2)
+{
+  float s = 0;
+  for(int i = 0; i < DoF; ++i)
+  {
+    s += v1[i] * v2[i];
+  }
+  return s;
+}
+
+template<size_t DoF>
+std::array<float,DoF*DoF> diad(std::array<float,DoF> v1, std::array<float,DoF> v2)
+{
+  std::array<float,DoF*DoF> m;
+  for(int i = 0; i < DoF; ++i) for(int j = 0; j < DoF; ++j)
+  {
+    m[i*DoF+j] = v1[i] * v2[j];
+  }
+  return m;
+}
+
+template<size_t DoF>
+std::array<float,DoF> matmul(std::array<float,DoF*DoF> mat, std::array<float,DoF> v)
+{
+  std::array<float,DoF> res{0};
+  for(int i=0;i < DoF;++i)
+    for(int k=0;k < DoF;++k)
+      res[i] += mat[i*DoF+k]*v[k];
+  return res;
+}
+
+
+template<size_t DoF, int continuity, int extra_points>
+std::array<float,DoF> optimizeLBFGS(std::function<double(Curve&,double)> func, const std::vector<typename Reconstruction<continuity,extra_points>::Input>& input, std::array<float,DoF> start, uint id)
+{
+  const float lower_bound = 0.1;
+  const float eps = 1e-3;
+  const int m = 5;
+
+  std::array<float,ITERATIONS*DoF> x;
+  std::array<float,ITERATIONS*DoF> g;
+  std::array<float,ITERATIONS*DoF> s;
+  std::array<float,ITERATIONS*DoF> y;
+  std::array<float,ITERATIONS> ro;
+
+  std::array<float,DoF> freedoms;
+  for(int i=0;i < DoF;++i) freedoms[i] = start[i];
+  for(int i=0;i < DoF;++i) x[i] = start[i];
+
+  printArray(freedoms);
+
+  for(volatile int i = 0; i < ITERATIONS; ++i)
+  {
+    std::array<float,DoF> d;
+    float val = optimizationTarget<DoF,continuity,extra_points>(func, input, freedoms, id);
+    for(int k = 0; k < DoF; ++k)
+    {
+      std::array<float,DoF> freedoms_fwd = freedoms;
+      freedoms_fwd[k] += eps;
+      float val_fwd = optimizationTarget<DoF,continuity,extra_points>(func, input, freedoms_fwd, id);
+      std::array<float,DoF> freedoms_bck = freedoms;
+      freedoms_bck[k] -= eps;
+      float val_bck = optimizationTarget<DoF,continuity,extra_points>(func, input, freedoms_bck, id);
+
+      d[k] = (val_fwd - val_bck) / (2 * eps);
+    }
+    for(int j = 0; j < DoF; ++j) g[i*DoF+j] = d[j];
+    if(i > 0) for(int j = 0; j < DoF; ++j) y[(i-1)*DoF+j] = g[i*DoF+j] - g[(i-1)*DoF+j];
+    if(i > 0) ro[i-1] = 1/dot(get<DoF>(y,i-1), get<DoF>(s,i-1));
+
+    std::array<float,DoF> q;
+    q = d;
+    //printArray(d);
+
+    std::array<float,DoF> alpha;
+    for(int j = i-1; j >= std::max(0,i-m); --j)
+    {
+      float alpha_i = alpha[j-(i-m)] = ro[j]*dot(get<DoF>(s,j),q);
+      q = add(q, mult(get<DoF>(y,j),-1*alpha_i));
+    }
+    //printArray(q);
+    
+    std::array<float,DoF*DoF> H;
+    if(i > 0)
+    {
+      float h = 1 / dot(get<DoF>(y,i-1), get<DoF>(y,i-1));
+      H = diad(get<DoF>(y,i-1), mult(get<DoF>(s,i-1), h));
+    }
+    else
+    {
+      for(int a=0;a<DoF;++a) for(int b=0;b<DoF;++b)
+        if(a==b) H[a*DoF+b] = 1;
+        else H[a*DoF+b] = 0;
+    }
+
+    std::array<float,DoF> z;
+    z = matmul(H, q);
+
+    for(int j = std::max(0,i-m); j <= i-1; ++j)
+    {
+      float beta_i = ro[j]*dot(get<DoF>(y,j),z);
+      z = add(z,mult(get<DoF>(s,j), alpha[j-(i-m)] - beta_i));
+    }
+
+    for(int k = 0; k < DoF; ++k) freedoms[k] -= z[k];
+    printArray(freedoms);
+
+    for(int j = 0; j < DoF; ++j) x[(i+1)*DoF+j] = freedoms[j];
+    for(int j = 0; j < DoF; ++j) s[i*DoF+j] = x[(i+1)*DoF+j] - x[i*DoF+j];
+    std::cerr << i << std::endl;
+  }
+  return get<DoF>(x, ITERATIONS-1);
+}
 
 template <int continuity, int extra_points>
 Curve::Ptr Reconstruction<continuity,extra_points>::createResultCurve(const typename Reconstruction<continuity,extra_points>::Result_cpu& res)

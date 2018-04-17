@@ -140,6 +140,9 @@ protected:
   bool infnorm = false;
 };
 
+template<size_t DoF, int continuity, int extra_points>
+std::array<float,DoF> optimizeLBFGS(std::function<double(Curve&,double)> func, const std::vector<typename Reconstruction<continuity,extra_points>::Input>& input, std::array<float,DoF> start, uint id);
+
 template <int continuity, int extra_points>
 std::vector<typename Reconstruction<continuity,extra_points>::Result> Reconstruction<continuity,extra_points>::optimize(const std::string& targetFunction, const std::vector<typename Reconstruction<continuity,extra_points>::Input>& input, const std::shared_ptr<std::vector<float>>& debugInfo)
 {
